@@ -2,38 +2,86 @@
 
 import Image from "next/image";
 import Link from "next/link";
+import { useEffect, useState } from "react";
 import { Footer } from "@/components/layout/Footer";
 import { Navbar } from "@/components/layout/Navbar";
 import { Button } from "@/components/ui/Button";
 import { useCart } from "@/context/CartContext";
 import { formatPrice } from "@/lib/formatPrice";
+import { getSafeImageUrl } from "@/lib/getSafeImageUrl";
 import type { Product } from "@/types/product";
 
-export function CartClient({ products }: { products: Product[] }) {
+export function CartClient() {
   const { cartItems, removeItem, updateQuantity } = useCart();
+  const [mounted, setMounted] = useState(false);
+  const [products, setProducts] = useState<Product[]>([]);
+  const [productsLoading, setProductsLoading] = useState(false);
 
-  const subtotal = cartItems.reduce((sum, item) => {
-    const product = products.find((entry) => entry.id === item.productId);
-    return sum + (product?.price ?? 0) * item.quantity;
-  }, 0);
+  useEffect(() => setMounted(true), []);
+
+  useEffect(() => {
+    if (!mounted || cartItems.length === 0) {
+      setProducts([]);
+      setProductsLoading(false);
+      return;
+    }
+
+    const ids = [...new Set(cartItems.map((item) => item.productId))];
+    const query = ids.map((id) => `ids=${encodeURIComponent(id)}`).join("&");
+
+    setProductsLoading(true);
+    let cancelled = false;
+
+    fetch(`/api/products/by-ids?${query}`)
+      .then((res) => res.json())
+      .then((data: unknown) => {
+        if (!cancelled) {
+          setProducts(Array.isArray(data) ? (data as Product[]) : []);
+          setProductsLoading(false);
+        }
+      })
+      .catch(() => {
+        if (!cancelled) setProductsLoading(false);
+      });
+
+    return () => {
+      cancelled = true;
+    };
+  }, [mounted, cartItems]);
+
+  const subtotal =
+    mounted && !productsLoading
+      ? cartItems.reduce((sum, item) => {
+          const product = products.find((entry) => entry.id === item.productId);
+          return sum + (product?.price ?? 0) * item.quantity;
+        }, 0)
+      : 0;
 
   const currency =
-    cartItems.length > 0
+    mounted && cartItems.length > 0
       ? (products.find((entry) => entry.id === cartItems[0].productId)
           ?.currency ?? "NGN")
       : "NGN";
+
+  const isLoading = !mounted || productsLoading;
 
   return (
     <>
       <Navbar />
       <main className="pt-32 pb-24 px-6 max-w-7xl mx-auto grid grid-cols-1 lg:grid-cols-12 gap-12">
         <section className="lg:col-span-8">
-          <h1 className="editorial-text font-black mb-12 text-4xl md:text-5xl">
+          <h1 className="editorial-text font-serif font-black mb-12 text-4xl md:text-5xl">
             YOUR BAG OF SWAG
           </h1>
 
           <div className="flex flex-col gap-px bg-outline-variant/20 border border-outline-variant/20">
-            {cartItems.length === 0 ? (
+            {isLoading ? (
+              <div className="p-16 text-center bg-surface-container-low">
+                <p className="text-on-surface-variant font-headline uppercase tracking-widest animate-pulse">
+                  Loading your bag...
+                </p>
+              </div>
+            ) : cartItems.length === 0 ? (
               <div className="p-16 text-center bg-surface-container-low">
                 <p className="text-on-surface-variant font-headline uppercase tracking-widest mb-8">
                   Your bag is empty
@@ -55,13 +103,15 @@ export function CartClient({ products }: { products: Product[] }) {
                     className="group flex flex-col md:flex-row gap-6 p-6 bg-surface-container-low hover:bg-surface-container transition-colors"
                   >
                     <div className="w-full md:w-40 aspect-[4/5] bg-surface-container-highest flex-shrink-0 overflow-hidden relative">
-                      <Image
-                        src={product.images[0]}
-                        alt={product.name}
-                        fill
-                        className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-110"
-                        sizes="(min-width: 768px) 10rem, 100vw"
-                      />
+                      {getSafeImageUrl(product.images) ? (
+                        <Image
+                          src={getSafeImageUrl(product.images)!}
+                          alt={product.name}
+                          fill
+                          className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-110"
+                          sizes="(min-width: 768px) 10rem, 100vw"
+                        />
+                      ) : null}
                     </div>
 
                     <div className="flex flex-col justify-between flex-grow py-2">
@@ -176,7 +226,9 @@ export function CartClient({ products }: { products: Product[] }) {
             <div className="space-y-4 mb-8">
               <div className="flex justify-between text-sm">
                 <span className="text-on-surface-variant">Subtotal</span>
-                <span>{formatPrice(subtotal, currency)}</span>
+                <span>
+                  {isLoading ? "—" : formatPrice(subtotal, currency)}
+                </span>
               </div>
               <div className="flex justify-between text-sm">
                 <span className="text-on-surface-variant">Shipping</span>
@@ -191,7 +243,7 @@ export function CartClient({ products }: { products: Product[] }) {
                   Total
                 </span>
                 <span className="editorial-text text-2xl font-black text-primary">
-                  {formatPrice(subtotal, currency)}
+                  {isLoading ? "—" : formatPrice(subtotal, currency)}
                 </span>
               </div>
             </div>

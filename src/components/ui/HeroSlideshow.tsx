@@ -9,22 +9,26 @@ interface HeroSlideshowProps {
 }
 
 export function HeroSlideshow({ images, interval = 4000 }: HeroSlideshowProps) {
+  const validImages = (Array.isArray(images) ? images : []).filter(
+    (src): src is string => typeof src === "string" && src.length > 0,
+  );
   const [current, setCurrent] = useState(0);
   const [prev, setPrev] = useState<number | null>(null);
 
   useEffect(() => {
+    if (validImages.length < 2) return;
     const timer = setInterval(() => {
       setCurrent((c) => {
         setPrev(c);
-        return (c + 1) % images.length;
+        return (c + 1) % validImages.length;
       });
     }, interval);
     return () => clearInterval(timer);
-  }, [images.length, interval]);
+  }, [validImages.length, interval]);
 
   return (
     <div className="absolute inset-0 z-0">
-      {images.map((src, i) => (
+      {validImages.map((src, i) => (
         <Image
           key={src}
           src={src}

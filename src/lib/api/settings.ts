@@ -1,6 +1,20 @@
-import { eq } from "drizzle-orm";
-import { getDb } from "@/db/client";
-import * as schema from "@/db/schema";
+import { apiFetch } from "./client";
+
+export interface PaymentMethodConfig {
+  id: string;
+  enabled: boolean;
+  label: string;
+  description: string;
+}
+
+export interface Settings {
+  heroImages: string[];
+  heroHeadline: string;
+  heroSubheading: string;
+  paymentMethods: PaymentMethodConfig[];
+  logisticsFeeNgn: number;
+  dutyTaxNgn: number;
+}
 
 export const DEFAULT_HERO_IMAGES: string[] = [
   "https://lh3.googleusercontent.com/aida-public/AB6AXuCw4BbeWVDx2Yd5eqEZTodd7klydHlRdKvsGoErfPNfs5GB1mSqIPH7-xBqPI8aJeFgk8a2enrPlA3KzoEipd5af9POYjAN2m22Vgxer3gTILomoSr16xaBa30BVIV5J4t0bz0z2pRwxbW9EHijq0ehzcfxathfcxG4He8dOo3WkospvAo_jYU4Tf_oP5mKJFCGg4UB2VTFmSHo8_oM8KHq7BVVBmtshwVGoqRw7f6pwDtGRVQKCO9YB6EApjuTCsrRao5NYMmkcA",
@@ -13,7 +27,7 @@ export const DEFAULT_HERO_IMAGES: string[] = [
 export const DEFAULT_HERO_HEADLINE = "WELCOME TO THE OASIS";
 export const DEFAULT_HERO_SUBHEADING = "OWN AUTHENTIC STYLE & INCARNATE SWAG";
 
-export const DEFAULT_PAYMENT_METHODS = [
+export const DEFAULT_PAYMENT_METHODS: PaymentMethodConfig[] = [
   {
     id: "paystack",
     enabled: true,
@@ -32,18 +46,17 @@ export const DEFAULT_PAYMENT_METHODS = [
     label: "Zenith Bank - Bank Transfer",
     description: "",
   },
-] as const;
+];
 
 export const DEFAULT_LOGISTICS_FEE = 4500;
 export const DEFAULT_DUTY_TAX = 11062;
 
-export async function getSettings() {
+export async function getSettings(): Promise<Settings | null> {
   try {
-    return await getDb().query.settings.findFirst({
-      where: eq(schema.settings.id, "global"),
+    return await apiFetch<Settings>("/settings", {
+      next: { tags: ["settings"] },
     });
-  } catch (error) {
-    console.error("[getSettings] Database query failed:", error);
+  } catch {
     return null;
   }
 }

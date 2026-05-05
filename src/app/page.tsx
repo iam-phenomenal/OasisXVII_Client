@@ -6,13 +6,13 @@ import { RevealSection } from "@/components/ui/RevealSection";
 import { HeroSlideshow } from "@/components/ui/HeroSlideshow";
 import { Navbar } from "@/components/layout/Navbar";
 import { Footer } from "@/components/layout/Footer";
-import { getActiveProducts } from "@/lib/getProducts";
+import { getActiveProducts } from "@/lib/api/products";
 import {
   DEFAULT_HERO_HEADLINE,
   DEFAULT_HERO_IMAGES,
   DEFAULT_HERO_SUBHEADING,
   getSettings,
-} from "@/lib/getSettings";
+} from "@/lib/api/settings";
 
 export const metadata: Metadata = {
   title: "Home | OasisXVII",
@@ -24,8 +24,12 @@ export default async function Home() {
     getSettings(),
   ]);
 
-  const heroImages =
+  const rawHeroImages =
     (settings?.heroImages as string[] | null) ?? DEFAULT_HERO_IMAGES;
+  const validHeroImages = rawHeroImages.filter(
+    (src): src is string => typeof src === "string" && src.length > 0,
+  );
+  const heroImages = validHeroImages.length > 0 ? validHeroImages : DEFAULT_HERO_IMAGES;
   const heroHeadline = settings?.heroHeadline ?? DEFAULT_HERO_HEADLINE;
   const heroSubheading = settings?.heroSubheading ?? DEFAULT_HERO_SUBHEADING;
 
@@ -38,7 +42,7 @@ export default async function Home() {
           <div className="absolute inset-0 bg-gradient-to-t from-background via-background/40 to-transparent" />
 
           <div className="relative z-10 w-full">
-            <h1 className="font-display text-on-surface text-[10vw] md:text-[9vw] lg:text-[7.5rem] leading-none font-black uppercase tracking-tighter mb-4 drop-shadow-[0_5px_15px_rgba(0,0,0,0.8)] md:whitespace-nowrap">
+            <h1 className="font-serif text-on-surface text-[10vw] md:text-[9vw] lg:text-[7.5rem] leading-none font-black uppercase tracking-tighter mb-4 drop-shadow-[0_5px_15px_rgba(0,0,0,0.8)] md:whitespace-nowrap">
               {heroHeadline}
             </h1>
             <h2 className="font-display text-lg md:text-4xl font-bold uppercase tracking-[0.2em] text-accent mb-10">

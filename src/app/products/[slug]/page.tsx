@@ -9,7 +9,7 @@ import { ProductInfoPanel } from "./ProductInfoPanel";
 import {
   getActiveProductBySlug,
   getActiveProductsByIds,
-} from "@/lib/getProducts";
+} from "@/lib/api/products";
 
 export const metadata: Metadata = {
   title: "Product | OasisXVII",

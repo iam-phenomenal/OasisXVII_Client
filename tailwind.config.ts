@@ -101,6 +101,7 @@ const config: Config = {
       //            Body    = Inter (functional counter-balance)
       //            Space Grotesk used as headline across most mockups.
       fontFamily: {
+        serif:    ["var(--font-serif)", "Georgia", "serif"],
         display:  ["var(--font-display)", "Bebas Neue", "sans-serif"],
         headline: ["var(--font-headline)", "sans-serif"],
         body:     ["var(--font-body)", "sans-serif"],

@@ -43,7 +43,7 @@ export function ProductInfoPanel({ product }: { product: Product }) {
 
   return (
     <aside className="col-span-12 lg:col-span-5 lg:sticky lg:top-40 h-fit">
-      <h1 className="font-headline text-[clamp(3rem,8vw,6rem)] font-[900] tracking-tighter uppercase leading-[0.8] mb-12">
+      <h1 className="font-serif text-[clamp(3rem,8vw,6rem)] font-[900] tracking-tighter uppercase leading-[0.8] mb-12">
         {product.name}
       </h1>
 

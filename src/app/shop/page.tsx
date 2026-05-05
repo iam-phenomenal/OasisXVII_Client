@@ -4,7 +4,7 @@ import { Navbar } from "@/components/layout/Navbar";
 import { ProductCard } from "@/components/ui/ProductCard";
 import { RevealSection } from "@/components/ui/RevealSection";
 import { SortDropdown } from "@/components/ui/SortDropdown";
-import { getActiveProducts } from "@/lib/getProducts";
+import { getActiveProducts } from "@/lib/api/products";
 import type { Product } from "@/types/product";
 
 export const metadata: Metadata = {
@@ -65,7 +65,7 @@ export default async function ShopPage({
       <Navbar />
       <main className="pt-32 pb-32">
         <header className="px-6 mb-12">
-          <h1 className="text-[clamp(4rem,12vw,10rem)] leading-[0.85] font-black font-headline uppercase tracking-tighter mb-8 italic">
+          <h1 className="text-[clamp(4rem,12vw,10rem)] leading-[0.85] font-black font-serif uppercase tracking-tighter mb-8 italic">
             SHOP
           </h1>
           <div className="flex flex-col md:flex-row justify-between items-start md:items-end gap-6 border-b border-primary/30 pb-8">

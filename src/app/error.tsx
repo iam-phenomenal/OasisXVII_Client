@@ -14,7 +14,7 @@ export default function Error({
       <p className="font-headline text-[20vw] font-black leading-none tracking-tighter text-primary opacity-20 select-none">
         ERR
       </p>
-      <h1 className="font-headline text-4xl font-black uppercase tracking-tight -mt-8 mb-6">
+      <h1 className="font-serif text-4xl font-black uppercase tracking-tight -mt-8 mb-6">
         Something broke.
       </h1>
       <p className="text-on-surface-variant font-body uppercase tracking-widest text-sm mb-12 max-w-2xl">

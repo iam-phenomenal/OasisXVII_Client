@@ -6,7 +6,9 @@ import { useRouter } from "next/navigation";
 import { Navbar } from "@/components/layout/Navbar";
 import { Footer } from "@/components/layout/Footer";
 import { useCart } from "@/context/CartContext";
+import { createOrder, type CreateOrderPayload } from "@/lib/api/orders";
 import { formatPrice } from "@/lib/formatPrice";
+import { getSafeImageUrl } from "@/lib/getSafeImageUrl";
 import type { Product } from "@/types/product";
 
 interface PaymentMethod {
@@ -17,21 +19,26 @@ interface PaymentMethod {
 }
 
 interface CheckoutClientProps {
-  products: Product[];
   paymentMethods: PaymentMethod[];
   logisticsFeeNgn: number;
   dutyTaxNgn: number;
 }
 
 export function CheckoutClient({
-  products,
   paymentMethods,
   logisticsFeeNgn,
   dutyTaxNgn,
 }: CheckoutClientProps) {
   const router = useRouter();
   const { cartItems, clearCart } = useCart();
+
+  const [mounted, setMounted] = useState(false);
+  const [products, setProducts] = useState<Product[]>([]);
+  const [productsLoading, setProductsLoading] = useState(false);
+
   const [emailOptIn, setEmailOptIn] = useState(true);
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [orderError, setOrderError] = useState("");
   const [paymentMethod, setPaymentMethod] = useState<string>(
     paymentMethods.find((method) => method.enabled)?.id ?? "",
   );
@@ -57,11 +64,43 @@ export function CheckoutClient({
     (method) => method.id === "paystack",
   )?.description;
 
+  useEffect(() => setMounted(true), []);
+
   useEffect(() => {
-    if (cartItems.length === 0) {
+    if (!mounted || cartItems.length === 0) {
+      setProducts([]);
+      setProductsLoading(false);
+      return;
+    }
+
+    const ids = [...new Set(cartItems.map((item) => item.productId))];
+    const query = ids.map((id) => `ids=${encodeURIComponent(id)}`).join("&");
+
+    setProductsLoading(true);
+    let cancelled = false;
+
+    fetch(`/api/products/by-ids?${query}`)
+      .then((res) => res.json())
+      .then((data: unknown) => {
+        if (!cancelled) {
+          setProducts(Array.isArray(data) ? (data as Product[]) : []);
+          setProductsLoading(false);
+        }
+      })
+      .catch(() => {
+        if (!cancelled) setProductsLoading(false);
+      });
+
+    return () => {
+      cancelled = true;
+    };
+  }, [mounted, cartItems]);
+
+  useEffect(() => {
+    if (mounted && cartItems.length === 0) {
       router.replace("/cart");
     }
-  }, [cartItems, router]);
+  }, [mounted, cartItems, router]);
 
   useEffect(() => {
     if (!enabledPaymentMethods.some((method) => method.id === paymentMethod)) {
@@ -86,6 +125,8 @@ export function CheckoutClient({
   const dutyTax = currency === "NGN" ? dutyTaxNgn : 0;
   const totalDue = subtotal + logisticsFee + dutyTax;
 
+  const isLoading = !mounted || productsLoading;
+
   function updateField<K extends keyof typeof form>(key: K, value: string) {
     setForm((prev) => ({ ...prev, [key]: value }));
   }
@@ -95,13 +136,13 @@ export function CheckoutClient({
     value: string,
   ): string {
     const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-    const phoneRegex = /^[+\d][\d\s\-()+]{6,}$/;
 
     switch (key) {
       case "email":
-        if (value.trim() === "") return "Email or mobile number is required";
-        if (!emailRegex.test(value) && !phoneRegex.test(value.trim()))
-          return "Enter a valid email address or phone number";
+        if (value.trim() === "") return "Email address is required";
+        if (!emailRegex.test(value.trim())) {
+          return "Enter a valid email address";
+        }
         return "";
       case "fullName":
         return value.trim().length < 2 ? "Full name is required" : "";
@@ -121,23 +162,58 @@ export function CheckoutClient({
   }
 
   function validate(): boolean {
-    const next = (
-      Object.keys(form) as (keyof typeof form)[]
-    ).reduce<typeof errors>(
-      (acc, key) => ({ ...acc, [key]: getFieldError(key, form[key]) }),
-      { ...errors },
-    );
+    const next = (Object.keys(form) as (keyof typeof form)[]).reduce<
+      typeof errors
+    >((acc, key) => ({ ...acc, [key]: getFieldError(key, form[key]) }), {
+      ...errors,
+    });
     setErrors(next);
     return Object.values(next).every((e) => e === "");
   }
 
-  function handleCompletePurchase() {
+  async function handleCompletePurchase() {
+    setOrderError("");
+
     if (!validate()) return;
-    clearCart();
-    router.push("/");
+
+    if (!paymentMethod) {
+      setOrderError("No payment method is currently available.");
+      return;
+    }
+
+    const orderPayload: CreateOrderPayload = {
+      customerEmail: form.email.trim(),
+      customerName: form.fullName.trim(),
+      shippingAddress: {
+        line1: form.address.trim(),
+        city: form.city.trim(),
+        postalCode: form.postalCode.trim(),
+        country: "NG",
+      },
+      paymentMethod,
+      items: cartItems.map((item) => ({
+        productId: item.productId,
+        size: item.size,
+        color: item.color,
+        quantity: item.quantity,
+      })),
+    };
+
+    setIsSubmitting(true);
+
+    try {
+      const order = await createOrder(orderPayload);
+      clearCart();
+      router.push(
+        `/order-confirmation?id=${encodeURIComponent(order.id)}&total=${order.totalDue}&currency=${order.currency}`,
+      );
+    } catch {
+      setOrderError("Unable to place order. Please try again.");
+      setIsSubmitting(false);
+    }
   }
 
-  if (cartItems.length === 0) {
+  if (mounted && cartItems.length === 0) {
     return null;
   }
 
@@ -148,12 +224,12 @@ export function CheckoutClient({
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-16 xl:gap-24">
           <section className="lg:col-span-7 space-y-20">
             <div>
-              <h1 className="font-headline font-black text-4xl tracking-tighter uppercase mb-10 italic">
+              <h1 className="font-serif font-black text-4xl tracking-tighter uppercase mb-10 italic">
                 Contact <span className="text-primary">_</span>
               </h1>
               <div className="space-y-8">
                 <FloatingInput
-                  label="Email / Mobile"
+                  label="Email"
                   placeholder="you@example.com"
                   value={form.email}
                   onChange={(value) => updateField("email", value)}
@@ -285,68 +361,76 @@ export function CheckoutClient({
               </h2>
 
               <div className="space-y-8 mb-12">
-                {cartItems.map((item) => {
-                  const product = products.find(
-                    (entry) => entry.id === item.productId,
-                  );
-                  if (!product) return null;
+                {isLoading ? (
+                  <p className="text-on-surface-variant font-headline text-[10px] uppercase tracking-widest animate-pulse">
+                    Loading items...
+                  </p>
+                ) : (
+                  cartItems.map((item) => {
+                    const product = products.find(
+                      (entry) => entry.id === item.productId,
+                    );
+                    if (!product) return null;
 
-                  return (
-                    <article
-                      key={`${item.productId}-${item.size}-${item.color}`}
-                      className="flex gap-6 items-start"
-                    >
-                      <div className="relative w-28 aspect-[3/4] bg-surface-container-high overflow-hidden border border-outline">
-                        <Image
-                          src={product.images[0]}
-                          alt={product.name}
-                          fill
-                          className="object-cover mix-blend-luminosity hover:mix-blend-normal"
-                          sizes="7rem"
-                        />
-                        <span className="absolute top-2 right-2 bg-primary text-on-primary font-headline font-black text-[10px] px-2 py-1">
-                          {item.quantity}
-                        </span>
-                      </div>
+                    return (
+                      <article
+                        key={`${item.productId}-${item.size}-${item.color}`}
+                        className="flex gap-6 items-start"
+                      >
+                        <div className="relative w-28 aspect-[3/4] bg-surface-container-high overflow-hidden border border-outline">
+                          {getSafeImageUrl(product.images) ? (
+                            <Image
+                              src={getSafeImageUrl(product.images)!}
+                              alt={product.name}
+                              fill
+                              className="object-cover mix-blend-luminosity hover:mix-blend-normal"
+                              sizes="7rem"
+                            />
+                          ) : null}
+                          <span className="absolute top-2 right-2 bg-primary text-on-primary font-headline font-black text-[10px] px-2 py-1">
+                            {item.quantity}
+                          </span>
+                        </div>
 
-                      <div>
-                        <h3 className="font-headline font-black uppercase tracking-tight text-base italic">
-                          {product.name}
-                        </h3>
-                        <p className="text-[10px] text-on-surface-variant font-bold uppercase tracking-widest">
-                          {item.color} / {item.size}
-                        </p>
-                        <p className="text-base font-headline font-bold mt-4">
-                          {formatPrice(
-                            product.price * item.quantity,
-                            product.currency,
-                          )}
-                        </p>
-                      </div>
-                    </article>
-                  );
-                })}
+                        <div>
+                          <h3 className="font-headline font-black uppercase tracking-tight text-base italic">
+                            {product.name}
+                          </h3>
+                          <p className="text-[10px] text-on-surface-variant font-bold uppercase tracking-widest">
+                            {item.color} / {item.size}
+                          </p>
+                          <p className="text-base font-headline font-bold mt-4">
+                            {formatPrice(
+                              product.price * item.quantity,
+                              product.currency,
+                            )}
+                          </p>
+                        </div>
+                      </article>
+                    );
+                  })
+                )}
               </div>
 
               <div className="pt-10 border-t border-outline space-y-4">
                 <div className="flex justify-between text-[10px] font-bold uppercase tracking-widest text-on-surface-variant">
                   <span>Subtotal</span>
-                  <span>{formatPrice(subtotal, currency)}</span>
+                  <span>{isLoading ? "—" : formatPrice(subtotal, currency)}</span>
                 </div>
                 <div className="flex justify-between text-[10px] font-bold uppercase tracking-widest text-on-surface-variant">
                   <span>Logistics</span>
-                  <span>{formatPrice(logisticsFee, currency)}</span>
+                  <span>{isLoading ? "—" : formatPrice(logisticsFee, currency)}</span>
                 </div>
                 <div className="flex justify-between text-[10px] font-bold uppercase tracking-widest text-on-surface-variant">
                   <span>Duty &amp; Tax</span>
-                  <span>{formatPrice(dutyTax, currency)}</span>
+                  <span>{isLoading ? "—" : formatPrice(dutyTax, currency)}</span>
                 </div>
                 <div className="flex justify-between items-end">
                   <span className="text-[10px] font-bold uppercase tracking-widest text-on-surface-variant">
                     Total Due
                   </span>
                   <span className="text-2xl font-headline font-black uppercase tracking-tighter text-primary underline decoration-2 underline-offset-8">
-                    {formatPrice(totalDue, currency)}
+                    {isLoading ? "—" : formatPrice(totalDue, currency)}
                   </span>
                 </div>
               </div>
@@ -354,11 +438,19 @@ export function CheckoutClient({
               <button
                 type="button"
                 onClick={handleCompletePurchase}
-                className="w-full bg-primary py-6 mt-12 text-on-primary font-headline font-black uppercase tracking-[0.3em] text-sm shadow-wine-glow hover:shadow-wine-glow-hover transition-all duration-300 relative overflow-hidden group"
+                disabled={isSubmitting || isLoading}
+                className="w-full bg-primary py-6 mt-12 text-on-primary font-headline font-black uppercase tracking-[0.3em] text-sm shadow-wine-glow hover:shadow-wine-glow-hover transition-all duration-300 relative overflow-hidden group disabled:opacity-60 disabled:cursor-not-allowed"
               >
                 <div className="absolute inset-0 bg-white/10 translate-y-full group-hover:translate-y-0 transition-transform duration-300" />
-                <span className="relative z-10">Complete Purchase</span>
+                <span className="relative z-10">
+                  {isSubmitting ? "Placing Order..." : "Complete Purchase"}
+                </span>
               </button>
+              {orderError ? (
+                <p className="text-[10px] font-bold uppercase tracking-widest text-error mt-4">
+                  {orderError}
+                </p>
+              ) : null}
             </div>
           </aside>
         </div>

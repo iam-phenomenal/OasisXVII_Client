@@ -1,7 +1,15 @@
 import type { Metadata } from "next";
-import { Epilogue, Space_Grotesk, Inter } from "next/font/google";
+import { Bodoni_Moda, Epilogue, Space_Grotesk, Inter } from "next/font/google";
 import "./globals.css";
 import { CartProvider } from "@/context/CartContext";
+
+const bodoniModa = Bodoni_Moda({
+  subsets: ["latin"],
+  weight: ["400", "700", "800", "900"],
+  style: ["normal", "italic"],
+  variable: "--font-serif",
+  display: "swap",
+});
 
 const epilogue = Epilogue({
   subsets: ["latin"],
@@ -36,7 +44,7 @@ export default function RootLayout({
   return (
     <html
       lang="en"
-      className={`dark bg-background ${epilogue.variable} ${spaceGrotesk.variable} ${inter.variable}`}
+      className={`dark bg-background ${bodoniModa.variable} ${epilogue.variable} ${spaceGrotesk.variable} ${inter.variable}`}
     >
       <head>
         <link

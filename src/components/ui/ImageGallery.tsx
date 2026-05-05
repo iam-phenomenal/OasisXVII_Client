@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import Image from "next/image";
+import { getSafeImageUrl } from "@/lib/getSafeImageUrl";
 
 interface ImageGalleryProps {
   images: string[];
@@ -9,24 +10,29 @@ interface ImageGalleryProps {
 }
 
 export function ImageGallery({ images, productName }: ImageGalleryProps) {
+  const validImages = (Array.isArray(images) ? images : []).filter(
+    (img) => getSafeImageUrl([img]) !== undefined,
+  ) as string[];
   const [activeIndex, setActiveIndex] = useState(0);
 
   return (
     <div className="flex flex-col gap-6">
       <div className="aspect-[4/5] bg-surface-container overflow-hidden group relative">
-        <Image
-          src={images[activeIndex]}
-          alt={productName}
-          fill
-          className="object-cover transition-all duration-700 group-hover:scale-105"
-          priority
-          sizes="(min-width: 1024px) 58vw, 100vw"
-        />
+        {validImages[activeIndex] ? (
+          <Image
+            src={validImages[activeIndex]}
+            alt={productName}
+            fill
+            className="object-cover transition-all duration-700 group-hover:scale-105"
+            priority
+            sizes="(min-width: 1024px) 58vw, 100vw"
+          />
+        ) : null}
       </div>
 
-      {images.length > 1 ? (
+      {validImages.length > 1 ? (
         <div className="grid grid-cols-2 gap-6">
-          {images.slice(0, 4).map((src, index) => {
+          {validImages.slice(0, 4).map((src, index) => {
             const isActive = index === activeIndex;
 
             return (

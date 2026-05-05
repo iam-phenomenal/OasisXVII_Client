@@ -1,6 +1,7 @@
 import Image from "next/image";
 import Link from "next/link";
 import { formatPrice } from "@/lib/formatPrice";
+import { getSafeImageUrl } from "@/lib/getSafeImageUrl";
 import type { Product } from "@/types/product";
 import { VintageTag } from "@/components/ui/VintageTag";
 
@@ -44,14 +45,16 @@ export function ProductCard({ product, priority = false }: ProductCardProps) {
         aria-label={`View ${product.name}`}
       >
         <div className="aspect-[4/5] overflow-hidden bg-surface-container mb-6 relative">
-          <Image
-            src={product.images[0]}
-            alt={product.name}
-            fill
-            className={imageClasses}
-            priority={priority}
-            sizes="(min-width: 1024px) 33vw, (min-width: 768px) 50vw, 100vw"
-          />
+          {getSafeImageUrl(product.images) ? (
+            <Image
+              src={getSafeImageUrl(product.images)!}
+              alt={product.name}
+              fill
+              className={imageClasses}
+              priority={priority}
+              sizes="(min-width: 1024px) 33vw, (min-width: 768px) 50vw, 100vw"
+            />
+          ) : null}
 
           {product.badge ? (
             <div className="absolute top-0 right-0">

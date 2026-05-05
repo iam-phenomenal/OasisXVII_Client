@@ -10,7 +10,7 @@ export default function NotFound() {
         <p className="font-headline text-[20vw] font-black leading-none tracking-tighter text-primary opacity-20 select-none pointer-events-none">
           404
         </p>
-        <h1 className="font-headline text-4xl md:text-6xl font-black uppercase tracking-tight -mt-8 mb-6">
+        <h1 className="font-serif text-4xl md:text-6xl font-black uppercase tracking-tight -mt-8 mb-6">
           Lost in the void.
         </h1>
         <p className="text-on-surface-variant font-body uppercase tracking-widest text-sm mb-12">
