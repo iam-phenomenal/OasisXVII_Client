@@ -8,6 +8,7 @@ export interface CreateOrderPayload {
     city: string;
     postalCode: string;
     country: string;
+    state?: string;
   };
   paymentMethod: string;
   items: Array<{
@@ -24,6 +25,10 @@ export interface OrderConfirmation {
   totalDue: number;
   currency: string;
   createdAt: string;
+  paystack?: {
+    authorizationUrl: string;
+    reference: string;
+  };
 }
 
 export async function createOrder(

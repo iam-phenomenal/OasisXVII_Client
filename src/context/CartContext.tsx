@@ -134,7 +134,6 @@ export function CartProvider({ children }: { children: ReactNode }) {
         dispatch({ type: "HYDRATE", payload: validItems });
       }
     } catch (error) {
-      console.error("[CartProvider] Failed to parse cart from localStorage:", error);
       localStorage.removeItem(STORAGE_KEY);
     }
   }, []);

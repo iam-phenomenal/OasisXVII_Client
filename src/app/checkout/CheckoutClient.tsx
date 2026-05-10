@@ -10,22 +10,14 @@ import { createOrder, type CreateOrderPayload } from "@/lib/api/orders";
 import { formatPrice } from "@/lib/formatPrice";
 import { getSafeImageUrl } from "@/lib/getSafeImageUrl";
 import type { Product } from "@/types/product";
-
-interface PaymentMethod {
-  id: string;
-  enabled: boolean;
-  label: string;
-  description: string;
-}
+import { Country, State } from "country-state-city";
 
 interface CheckoutClientProps {
-  paymentMethods: PaymentMethod[];
   logisticsFeeNgn: number;
   dutyTaxNgn: number;
 }
 
 export function CheckoutClient({
-  paymentMethods,
   logisticsFeeNgn,
   dutyTaxNgn,
 }: CheckoutClientProps) {
@@ -39,15 +31,14 @@ export function CheckoutClient({
   const [emailOptIn, setEmailOptIn] = useState(true);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [orderError, setOrderError] = useState("");
-  const [paymentMethod, setPaymentMethod] = useState<string>(
-    paymentMethods.find((method) => method.enabled)?.id ?? "",
-  );
   const [form, setForm] = useState({
     email: "",
     fullName: "",
     address: "",
     city: "",
     postalCode: "",
+    country: "NG",
+    state: "",
   });
   const [errors, setErrors] = useState({
     email: "",
@@ -55,14 +46,9 @@ export function CheckoutClient({
     address: "",
     city: "",
     postalCode: "",
+    country: "",
+    state: "",
   });
-
-  const enabledPaymentMethods = paymentMethods.filter(
-    (method) => method.enabled,
-  );
-  const paystackDescription = paymentMethods.find(
-    (method) => method.id === "paystack",
-  )?.description;
 
   useEffect(() => setMounted(true), []);
 
@@ -102,12 +88,6 @@ export function CheckoutClient({
     }
   }, [mounted, cartItems, router]);
 
-  useEffect(() => {
-    if (!enabledPaymentMethods.some((method) => method.id === paymentMethod)) {
-      setPaymentMethod(enabledPaymentMethods[0]?.id ?? "");
-    }
-  }, [enabledPaymentMethods, paymentMethod]);
-
   const subtotal = useMemo(() => {
     return cartItems.reduce((sum, item) => {
       const product = products.find((entry) => entry.id === item.productId);
@@ -127,8 +107,34 @@ export function CheckoutClient({
 
   const isLoading = !mounted || productsLoading;
 
+  const countryOptions = useMemo(() => {
+    const all = Country.getAllCountries().map((c) => ({
+      value: c.isoCode,
+      label: c.name,
+    }));
+    const nigeria = all.find((c) => c.value === "NG");
+    const rest = all
+      .filter((c) => c.value !== "NG")
+      .sort((a, b) => a.label.localeCompare(b.label));
+    return nigeria ? [nigeria, ...rest] : rest;
+  }, []);
+
+  const stateOptions = useMemo(
+    () =>
+      State.getStatesOfCountry(form.country).map((s) => ({
+        value: s.isoCode,
+        label: s.name,
+      })),
+    [form.country],
+  );
+
   function updateField<K extends keyof typeof form>(key: K, value: string) {
     setForm((prev) => ({ ...prev, [key]: value }));
+  }
+
+  function handleCountryChange(value: string) {
+    setForm((prev) => ({ ...prev, country: value, state: "" }));
+    setErrors((prev) => ({ ...prev, country: "", state: "" }));
   }
 
   function getFieldError<K extends keyof typeof form>(
@@ -150,8 +156,14 @@ export function CheckoutClient({
         return value.trim().length < 5 ? "Enter a valid street address" : "";
       case "city":
         return value.trim().length < 2 ? "City is required" : "";
-      case "postalCode":
-        return value.trim() === "" ? "Postal code is required" : "";
+      // case "postalCode":
+      //   return value.trim() === "" ? "Postal code is required" : "";
+      case "country":
+        return value.trim() === "" ? "Country is required" : "";
+      case "state":
+        return stateOptions.length > 0 && value.trim() === ""
+          ? "State is required"
+          : "";
       default:
         return "";
     }
@@ -176,11 +188,6 @@ export function CheckoutClient({
 
     if (!validate()) return;
 
-    if (!paymentMethod) {
-      setOrderError("No payment method is currently available.");
-      return;
-    }
-
     const orderPayload: CreateOrderPayload = {
       customerEmail: form.email.trim(),
       customerName: form.fullName.trim(),
@@ -188,9 +195,10 @@ export function CheckoutClient({
         line1: form.address.trim(),
         city: form.city.trim(),
         postalCode: form.postalCode.trim(),
-        country: "NG",
+        country: form.country,
+        ...(form.state ? { state: form.state } : {}),
       },
-      paymentMethod,
+      paymentMethod: "paystack",
       items: cartItems.map((item) => ({
         productId: item.productId,
         size: item.size,
@@ -204,9 +212,14 @@ export function CheckoutClient({
     try {
       const order = await createOrder(orderPayload);
       clearCart();
-      router.push(
-        `/order-confirmation?id=${encodeURIComponent(order.id)}&total=${order.totalDue}&currency=${order.currency}`,
-      );
+
+      if (order.paystack?.authorizationUrl) {
+        window.location.href = order.paystack.authorizationUrl;
+      } else {
+        router.push(
+          `/order-confirmation?id=${encodeURIComponent(order.id)}&total=${order.totalDue}&currency=${order.currency}`,
+        );
+      }
     } catch {
       setOrderError("Unable to place order. Please try again.");
       setIsSubmitting(false);
@@ -279,79 +292,49 @@ export function CheckoutClient({
                     error={errors.address}
                   />
                 </div>
-                <FloatingInput
-                  label="City"
-                  placeholder="City"
-                  value={form.city}
-                  onChange={(value) => updateField("city", value)}
-                  onBlur={() => validateField("city")}
-                  error={errors.city}
-                />
-                <FloatingInput
-                  label="Postal Code"
-                  placeholder="Postal code"
-                  value={form.postalCode}
-                  onChange={(value) => updateField("postalCode", value)}
-                  onBlur={() => validateField("postalCode")}
-                  error={errors.postalCode}
-                />
+                <div className="md:col-span-2">
+                  <FloatingSelect
+                    label="Country"
+                    value={form.country}
+                    onChange={handleCountryChange}
+                    onBlur={() => validateField("country")}
+                    options={countryOptions}
+                    error={errors.country}
+                  />
+                </div>
+                <div className={stateOptions.length > 0 ? "" : "md:col-span-2"}>
+                  <FloatingInput
+                    label="City"
+                    placeholder="City"
+                    value={form.city}
+                    onChange={(value) => updateField("city", value)}
+                    onBlur={() => validateField("city")}
+                    error={errors.city}
+                  />
+                </div>
+                {stateOptions.length > 0 ? (
+                  <FloatingSelect
+                    label="State"
+                    value={form.state}
+                    onChange={(value) => updateField("state", value)}
+                    onBlur={() => validateField("state")}
+                    options={stateOptions}
+                    error={errors.state}
+                  />
+                ) : null}
+                <div className="md:col-span-2">
+                  <FloatingInput
+                    label="Postal Code"
+                    placeholder="Postal code"
+                    value={form.postalCode}
+                    onChange={(value) => updateField("postalCode", value)}
+                    onBlur={() => validateField("postalCode")}
+                    error={errors.postalCode}
+                  />
+                </div>
               </div>
             </div>
 
-            <div>
-              <h2 className="font-headline font-black text-4xl tracking-tighter uppercase mb-10 italic">
-                Payment <span className="text-primary">_</span>
-              </h2>
-
-              <div className="space-y-4">
-                {enabledPaymentMethods.map(({ id, label }) => (
-                  <button
-                    key={id}
-                    type="button"
-                    onClick={() => setPaymentMethod(id)}
-                    className="w-full flex items-center gap-4 border border-outline p-5 text-left hover:border-primary transition-colors"
-                  >
-                    <span className="w-5 h-5 rounded-full border-2 border-outline flex items-center justify-center shrink-0">
-                      {paymentMethod === id && (
-                        <span className="w-2.5 h-2.5 rounded-full bg-primary" />
-                      )}
-                    </span>
-                    <span className="text-[11px] font-bold uppercase tracking-widest text-on-surface-variant">
-                      {label}
-                    </span>
-                  </button>
-                ))}
-
-                {paymentMethod === "paystack" && (
-                  <div className="border border-outline border-t-0 px-6 py-5 flex items-center gap-3">
-                    {paystackDescription ? (
-                      <p className="text-[11px] font-bold uppercase tracking-widest text-on-surface-variant">
-                        {paystackDescription}
-                      </p>
-                    ) : (
-                      <>
-                        <span className="text-[9px] font-bold uppercase tracking-widest text-on-surface-variant">
-                          Secured by
-                        </span>
-                        <span className="text-[11px] font-black uppercase tracking-wider text-on-surface">
-                          Paystack
-                        </span>
-                        <div className="ml-2 flex items-center gap-2">
-                          {["Mastercard", "Visa", "Verve"].map((card) => (
-                            <span
-                              key={card}
-                              className="text-[9px] font-bold uppercase tracking-widest border border-outline px-2 py-1 text-on-surface-variant"
-                            >
-                              {card}
-                            </span>
-                          ))}
-                        </div>
-                      </>
-                    )}
-                  </div>
-                )}
-              </div>
-            </div>
           </section>
 
           <aside className="lg:col-span-5 sticky top-32 h-fit">
@@ -443,7 +426,7 @@ export function CheckoutClient({
               >
                 <div className="absolute inset-0 bg-white/10 translate-y-full group-hover:translate-y-0 transition-transform duration-300" />
                 <span className="relative z-10">
-                  {isSubmitting ? "Placing Order..." : "Complete Purchase"}
+                  {isSubmitting ? "Redirecting to Paystack..." : "Pay with Paystack"}
                 </span>
               </button>
               {orderError ? (
@@ -451,6 +434,25 @@ export function CheckoutClient({
                   {orderError}
                 </p>
               ) : null}
+
+              <div className="mt-6 border border-outline px-6 py-5 flex items-center gap-3">
+                <span className="text-[9px] font-bold uppercase tracking-widest text-on-surface-variant">
+                  Secured by
+                </span>
+                <span className="text-[11px] font-black uppercase tracking-wider text-on-surface">
+                  Paystack
+                </span>
+                <div className="ml-2 flex items-center gap-2">
+                  {["Mastercard", "Visa", "Verve"].map((card) => (
+                    <span
+                      key={card}
+                      className="text-[9px] font-bold uppercase tracking-widest border border-outline px-2 py-1 text-on-surface-variant"
+                    >
+                      {card}
+                    </span>
+                  ))}
+                </div>
+              </div>
             </div>
           </aside>
         </div>
@@ -458,6 +460,64 @@ export function CheckoutClient({
 
       <Footer />
     </>
+  );
+}
+
+function FloatingSelect({
+  label,
+  value,
+  onChange,
+  onBlur,
+  options,
+  error,
+}: {
+  label: string;
+  value: string;
+  onChange: (value: string) => void;
+  onBlur?: () => void;
+  options: { value: string; label: string }[];
+  error?: string;
+}) {
+  return (
+    <div className="relative group">
+      <label
+        className={`absolute -top-2 left-4 bg-surface px-2 text-[10px] font-bold uppercase tracking-widest transition-colors z-10 ${
+          error
+            ? "text-error"
+            : "text-on-surface-variant group-focus-within:text-primary"
+        }`}
+      >
+        {label}
+      </label>
+      <div className="relative">
+        <select
+          className={`w-full bg-surface border transition-all outline-none p-5 font-body text-sm text-on-surface appearance-none pr-12 ${
+            error ? "border-error" : "border-outline focus:border-primary"
+          }`}
+          value={value}
+          onChange={(e) => onChange(e.target.value)}
+          onBlur={onBlur}
+        >
+          {options.map((opt) => (
+            <option
+              key={opt.value}
+              value={opt.value}
+              className="bg-surface text-on-surface"
+            >
+              {opt.label}
+            </option>
+          ))}
+        </select>
+        <span className="material-symbols-outlined absolute right-4 top-1/2 -translate-y-1/2 text-on-surface-variant pointer-events-none text-xl">
+          expand_more
+        </span>
+      </div>
+      {error && (
+        <p className="text-[10px] font-bold uppercase tracking-widest text-error mt-2">
+          {error}
+        </p>
+      )}
+    </div>
   );
 }
 
