@@ -23,7 +23,7 @@ export function ImageGallery({ images, productName }: ImageGalleryProps) {
             src={validImages[activeIndex]}
             alt={productName}
             fill
-            className="object-cover transition-all duration-700 group-hover:scale-105"
+            className="object-cover object-[center_20%] transition-all duration-700 group-hover:scale-105"
             priority
             sizes="(min-width: 1024px) 58vw, 100vw"
           />
@@ -53,7 +53,7 @@ export function ImageGallery({ images, productName }: ImageGalleryProps) {
                   src={src}
                   alt={`${productName} view ${index + 1}`}
                   fill
-                  className="object-cover"
+                  className="object-cover object-[center_20%]"
                   sizes="(min-width: 1024px) 29vw, 50vw"
                 />
               </button>
