@@ -62,11 +62,7 @@ export function ProductCard({ product, priority = false }: ProductCardProps) {
                 label={product.badge}
                 size="md"
                 variant={product.badge === "Limited" ? "vintage" : "wine"}
-                className={
-                  product.badge === "Sold Out"
-                    ? "bg-primary text-on-primary border-transparent"
-                    : "bg-primary text-on-primary border-transparent"
-                }
+                className="bg-primary text-white border-transparent"
               />
             </div>
           ) : null}

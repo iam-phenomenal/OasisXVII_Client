@@ -16,7 +16,7 @@ const legalLinks = [
 
 export function Footer() {
   return (
-    <footer className="bg-surface-container border-t border-primary/20 px-6 pt-16">
+    <footer className="bg-surface-container border-t border-primary/20 px-6 pt-12">
       <div className="flex flex-col md:flex-row justify-between gap-12 pb-9">
         <div className="max-w-xs">
           <Image
