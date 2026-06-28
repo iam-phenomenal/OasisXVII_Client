@@ -31,6 +31,14 @@ export interface OrderConfirmation {
   };
 }
 
+export type PaymentStatus = "success" | "failed" | "pending";
+
+export interface OrderStatus {
+  status: PaymentStatus;
+  totalDue?: number;
+  currency?: string;
+}
+
 export async function createOrder(
   payload: CreateOrderPayload,
 ): Promise<OrderConfirmation> {
