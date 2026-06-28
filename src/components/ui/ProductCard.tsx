@@ -21,8 +21,8 @@ export function ProductCard({ product, priority = false }: ProductCardProps) {
     .join(" ");
 
   const imageClasses = [
-    "object-cover object-[center_20%] grayscale transition-all duration-700",
-    isSoldOut ? "opacity-40" : "group-hover:grayscale-0 group-hover:scale-105",
+    "object-cover object-[center_20%] transition-all duration-700",
+    isSoldOut ? "opacity-40" : "group-hover:scale-105",
   ]
     .filter(Boolean)
     .join(" ");

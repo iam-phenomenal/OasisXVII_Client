@@ -34,7 +34,7 @@ export function HeroSlideshow({ images, interval = 4000 }: HeroSlideshowProps) {
           src={src}
           alt=""
           fill
-          className="w-full h-full object-cover object-center brightness-[0.35] grayscale contrast-125 transition-opacity duration-1000"
+          className="w-full h-full object-cover object-center brightness-[0.35] transition-opacity duration-1000"
           style={{
             opacity: i === current ? 1 : 0,
             zIndex: i === current ? 2 : i === prev ? 1 : 0,
