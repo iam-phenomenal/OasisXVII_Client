@@ -44,7 +44,7 @@ export default async function Home() {
           <div className="absolute inset-0 bg-gradient-to-t from-background via-background/40 to-transparent" />
 
           <div className="relative z-10 w-full">
-            <h1 className="font-serif text-on-surface text-[10vw] md:text-[9vw] lg:text-[7.5rem] leading-none font-black uppercase tracking-tighter mb-4 drop-shadow-[0_5px_15px_rgba(0,0,0,0.8)] md:whitespace-nowrap">
+            <h1 className="font-serif text-on-surface text-[10vw] md:text-[9vw] lg:text-[clamp(5rem,8vw,9rem)] leading-none font-black uppercase tracking-tighter mb-4 drop-shadow-[0_5px_15px_rgba(0,0,0,0.8)] md:whitespace-nowrap">
               {heroHeadline}
             </h1>
             <h2 className="font-display text-lg md:text-4xl font-bold uppercase tracking-[0.2em] text-accent mb-10">
