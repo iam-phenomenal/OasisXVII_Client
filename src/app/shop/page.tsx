@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import Link from "next/link";
 import { Footer } from "@/components/layout/Footer";
 import { Navbar } from "@/components/layout/Navbar";
 import { ProductCard } from "@/components/ui/ProductCard";
@@ -6,6 +7,8 @@ import { RevealSection } from "@/components/ui/RevealSection";
 import { SortDropdown } from "@/components/ui/SortDropdown";
 import { getActiveProducts } from "@/lib/api/products";
 import type { Product } from "@/types/product";
+
+const PAGE_SIZE = 6;
 
 export const metadata: Metadata = {
   title: "Shop | OasisXVII",
@@ -45,7 +48,7 @@ function sortProducts(list: Product[], sort: SortKey) {
 export default async function ShopPage({
   searchParams,
 }: {
-  searchParams?: Promise<{ sort?: string }>;
+  searchParams?: Promise<{ sort?: string; page?: string }>;
 }) {
   const params = searchParams ? await searchParams : undefined;
   const rawSort = params?.sort;
@@ -59,6 +62,20 @@ export default async function ShopPage({
 
   const products = await getActiveProducts();
   const sortedProducts = sortProducts(products, sort);
+
+  const totalPages = Math.max(1, Math.ceil(sortedProducts.length / PAGE_SIZE));
+  const page = Math.min(Math.max(1, parseInt(params?.page ?? "1", 10) || 1), totalPages);
+  const pageProducts = sortedProducts.slice((page - 1) * PAGE_SIZE, page * PAGE_SIZE);
+
+  function pageUrl(p: number) {
+    const q = new URLSearchParams();
+    if (sort !== "featured") q.set("sort", sort);
+    if (p > 1) q.set("page", String(p));
+    const qs = q.toString();
+    return qs ? `/shop?${qs}` : "/shop";
+  }
+
+  const pad = (n: number) => String(n).padStart(2, "0");
 
   return (
     <>
@@ -79,7 +96,7 @@ export default async function ShopPage({
 
         <section className="px-6">
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-y-16 gap-x-12">
-            {sortedProducts.map((product, index) => (
+            {pageProducts.map((product, index) => (
               <RevealSection
                 key={product.id}
                 stagger={((index % 9) + 1) as 1 | 2 | 3 | 4 | 5 | 6 | 7 | 8 | 9}
@@ -91,26 +108,37 @@ export default async function ShopPage({
         </section>
 
         <div className="mt-24 px-6 flex justify-center items-center gap-12">
-          <button
-            type="button"
-            disabled
-            className="font-headline font-bold uppercase tracking-widest text-on-surface-variant"
-          >
-            Prev
-          </button>
+          {page > 1 ? (
+            <Link
+              href={pageUrl(page - 1)}
+              className="font-headline font-bold uppercase tracking-widest hover:text-primary transition-colors"
+            >
+              Prev
+            </Link>
+          ) : (
+            <span className="font-headline font-bold uppercase tracking-widest text-on-surface-variant/40 pointer-events-none">
+              Prev
+            </span>
+          )}
           <span className="font-headline font-black text-2xl text-primary italic">
-            01
+            {pad(page)}
           </span>
           <div className="w-8 h-[2px] bg-primary/30" />
           <span className="font-headline font-black text-2xl text-on-surface-variant italic">
-            04
+            {pad(totalPages)}
           </span>
-          <button
-            type="button"
-            className="font-headline font-bold uppercase tracking-widest hover:text-primary transition-colors"
-          >
-            Next
-          </button>
+          {page < totalPages ? (
+            <Link
+              href={pageUrl(page + 1)}
+              className="font-headline font-bold uppercase tracking-widest hover:text-primary transition-colors"
+            >
+              Next
+            </Link>
+          ) : (
+            <span className="font-headline font-bold uppercase tracking-widest text-on-surface-variant/40 pointer-events-none">
+              Next
+            </span>
+          )}
         </div>
       </main>
       <Footer />
