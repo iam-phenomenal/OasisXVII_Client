@@ -54,7 +54,7 @@ export const DEFAULT_DUTY_TAX = 11062;
 export async function getSettings(): Promise<Settings | null> {
   try {
     return await apiFetch<Settings>("/settings", {
-      next: { tags: ["settings"] },
+      next: { revalidate: 3600, tags: ["settings"] },
     });
   } catch {
     return null;

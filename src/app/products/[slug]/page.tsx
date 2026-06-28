@@ -7,9 +7,17 @@ import { ProductCard } from "@/components/ui/ProductCard";
 import { ImageGallery } from "@/components/ui/ImageGallery";
 import { ProductInfoPanel } from "./ProductInfoPanel";
 import {
+  getActiveProducts,
   getActiveProductBySlug,
   getActiveProductsByIds,
 } from "@/lib/api/products";
+
+export const revalidate = 300;
+
+export async function generateStaticParams() {
+  const products = await getActiveProducts();
+  return products.map((p) => ({ slug: p.slug }));
+}
 
 export const metadata: Metadata = {
   title: "Product | OasisXVII",

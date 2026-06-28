@@ -14,6 +14,8 @@ import {
   getSettings,
 } from "@/lib/api/settings";
 
+export const revalidate = 300;
+
 export const metadata: Metadata = {
   title: "Home | OasisXVII",
 };

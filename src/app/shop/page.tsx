@@ -10,6 +10,8 @@ import type { Product } from "@/types/product";
 
 const PAGE_SIZE = 6;
 
+export const revalidate = 300;
+
 export const metadata: Metadata = {
   title: "Shop | OasisXVII",
 };

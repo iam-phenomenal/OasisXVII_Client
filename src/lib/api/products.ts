@@ -14,7 +14,7 @@ function sanitize(p: Product): Product {
 export async function getActiveProducts(): Promise<Product[]> {
   try {
     const products = await apiFetch<Product[]>("/products", {
-      next: { tags: ["products"] },
+      next: { revalidate: 300, tags: ["products"] },
     });
     return products.map(sanitize);
   } catch {
@@ -27,7 +27,7 @@ export async function getActiveProductBySlug(
 ): Promise<Product | null> {
   try {
     const product = await apiFetch<Product>(`/products/${slug}`, {
-      next: { tags: ["products", `product-${slug}`] },
+      next: { revalidate: 300, tags: ["products", `product-${slug}`] },
     });
     return sanitize(product);
   } catch (error) {
@@ -48,7 +48,7 @@ export async function getActiveProductsByIds(ids: string[]): Promise<Product[]> 
     const query = ids.map((id) => `ids=${encodeURIComponent(id)}`).join("&");
 
     const products = await apiFetch<Product[]>(`/products/by-ids?${query}`, {
-      next: { tags: ["products"] },
+      next: { revalidate: 300, tags: ["products"] },
     });
     return products.map(sanitize);
   } catch {
