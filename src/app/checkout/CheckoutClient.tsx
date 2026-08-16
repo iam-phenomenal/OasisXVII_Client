@@ -6,10 +6,10 @@ import { useRouter } from "next/navigation";
 import { Navbar } from "@/components/layout/Navbar";
 import { Footer } from "@/components/layout/Footer";
 import { useCart } from "@/context/CartContext";
+import { useCartProducts } from "@/hooks/useCartProducts";
 import { createOrder, type CreateOrderPayload } from "@/lib/api/orders";
 import { formatPrice } from "@/lib/formatPrice";
 import { getSafeImageUrl } from "@/lib/getSafeImageUrl";
-import type { Product } from "@/types/product";
 import { Country, State } from "country-state-city";
 
 interface CheckoutClientProps {
@@ -22,11 +22,8 @@ export function CheckoutClient({
   dutyTaxNgn,
 }: CheckoutClientProps) {
   const router = useRouter();
-  const { cartItems, clearCart } = useCart();
-
-  const [mounted, setMounted] = useState(false);
-  const [products, setProducts] = useState<Product[]>([]);
-  const [productsLoading, setProductsLoading] = useState(false);
+  const { cartItems, clearCart, hydrated } = useCart();
+  const { products, isLoading } = useCartProducts();
 
   const [emailOptIn, setEmailOptIn] = useState(true);
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -50,43 +47,11 @@ export function CheckoutClient({
     state: "",
   });
 
-  useEffect(() => setMounted(true), []);
-
   useEffect(() => {
-    if (!mounted || cartItems.length === 0) {
-      setProducts([]);
-      setProductsLoading(false);
-      return;
-    }
-
-    const ids = [...new Set(cartItems.map((item) => item.productId))];
-    const query = ids.map((id) => `ids=${encodeURIComponent(id)}`).join("&");
-
-    setProductsLoading(true);
-    let cancelled = false;
-
-    fetch(`/api/products/by-ids?${query}`)
-      .then((res) => res.json())
-      .then((data: unknown) => {
-        if (!cancelled) {
-          setProducts(Array.isArray(data) ? (data as Product[]) : []);
-          setProductsLoading(false);
-        }
-      })
-      .catch(() => {
-        if (!cancelled) setProductsLoading(false);
-      });
-
-    return () => {
-      cancelled = true;
-    };
-  }, [mounted, cartItems]);
-
-  useEffect(() => {
-    if (mounted && cartItems.length === 0) {
+    if (hydrated && cartItems.length === 0) {
       router.replace("/cart");
     }
-  }, [mounted, cartItems, router]);
+  }, [hydrated, cartItems, router]);
 
   const subtotal = useMemo(() => {
     return cartItems.reduce((sum, item) => {
@@ -104,8 +69,6 @@ export function CheckoutClient({
   const logisticsFee = currency === "NGN" ? logisticsFeeNgn : 0;
   const dutyTax = currency === "NGN" ? dutyTaxNgn : 0;
   const totalDue = subtotal + logisticsFee + dutyTax;
-
-  const isLoading = !mounted || productsLoading;
 
   const countryOptions = useMemo(() => {
     const all = Country.getAllCountries().map((c) => ({
@@ -226,7 +189,7 @@ export function CheckoutClient({
     }
   }
 
-  if (mounted && cartItems.length === 0) {
+  if (hydrated && cartItems.length === 0) {
     return null;
   }
 

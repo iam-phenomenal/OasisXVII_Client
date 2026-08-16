@@ -12,6 +12,9 @@ import type { CartItem } from "@/types/product";
 
 interface CartState {
   items: CartItem[];
+  // False until the effect below has read localStorage. Consumers gate on this
+  // so they never render a server-empty cart as a genuinely empty one.
+  hydrated: boolean;
 }
 
 type CartIdentity = Pick<CartItem, "productId" | "size" | "color">;
@@ -25,6 +28,7 @@ type CartAction =
 
 interface CartContextValue {
   cartItems: CartItem[];
+  hydrated: boolean;
   addItem: (item: CartItem) => void;
   removeItem: (productId: string, size: string, color: string) => void;
   updateQuantity: (
@@ -39,7 +43,7 @@ interface CartContextValue {
 
 const STORAGE_KEY = "oasisxvii-cart";
 const MAX_QUANTITY = 99;
-const initialState: CartState = { items: [] };
+const initialState: CartState = { items: [], hydrated: false };
 
 const CartContext = createContext<CartContextValue | null>(null);
 
@@ -76,7 +80,7 @@ function cartReducer(state: CartState, action: CartAction): CartState {
       );
 
       if (existingIndex === -1) {
-        return { items: [...state.items, action.payload] };
+        return { ...state, items: [...state.items, action.payload] };
       }
 
       const nextItems = [...state.items];
@@ -84,17 +88,19 @@ function cartReducer(state: CartState, action: CartAction): CartState {
         ...nextItems[existingIndex],
         quantity: nextItems[existingIndex].quantity + action.payload.quantity,
       };
-      return { items: nextItems };
+      return { ...state, items: nextItems };
     }
 
     case "REMOVE_ITEM":
       return {
+        ...state,
         items: state.items.filter((item) => !isSameItem(item, action.payload)),
       };
 
     case "UPDATE_QUANTITY": {
       if (action.payload.quantity <= 0) {
         return {
+          ...state,
           items: state.items.filter(
             (item) => !isSameItem(item, action.payload),
           ),
@@ -102,6 +108,7 @@ function cartReducer(state: CartState, action: CartAction): CartState {
       }
 
       return {
+        ...state,
         items: state.items.map((item) =>
           isSameItem(item, action.payload)
             ? { ...item, quantity: action.payload.quantity }
@@ -111,10 +118,10 @@ function cartReducer(state: CartState, action: CartAction): CartState {
     }
 
     case "CLEAR_CART":
-      return { items: [] };
+      return { ...state, items: [] };
 
     case "HYDRATE":
-      return { items: action.payload };
+      return { items: action.payload, hydrated: true };
 
     default:
       return state;
@@ -125,28 +132,36 @@ export function CartProvider({ children }: { children: ReactNode }) {
   const [state, dispatch] = useReducer(cartReducer, initialState);
 
   useEffect(() => {
+    let items: CartItem[] = [];
+
     try {
       const stored = localStorage.getItem(STORAGE_KEY);
-      if (!stored) return;
-      const parsed = JSON.parse(stored);
+      const parsed = stored ? JSON.parse(stored) : null;
       if (Array.isArray(parsed)) {
-        const validItems = parsed.filter(isValidCartItem);
-        dispatch({ type: "HYDRATE", payload: validItems });
+        items = parsed.filter(isValidCartItem);
       }
-    } catch (error) {
+    } catch {
       localStorage.removeItem(STORAGE_KEY);
     }
+
+    // Dispatched unconditionally so `hydrated` flips even for an absent or
+    // corrupt stored cart, which would otherwise leave consumers loading.
+    dispatch({ type: "HYDRATE", payload: items });
   }, []);
 
   useEffect(() => {
+    // Writing before hydration would persist the empty initial state over a
+    // stored cart if the tab closed in between.
+    if (!state.hydrated) return;
     localStorage.setItem(STORAGE_KEY, JSON.stringify(state.items));
-  }, [state.items]);
+  }, [state.hydrated, state.items]);
 
   const value = useMemo<CartContextValue>(() => {
     const cartCount = state.items.reduce((sum, item) => sum + item.quantity, 0);
 
     return {
       cartItems: state.items,
+      hydrated: state.hydrated,
       addItem: (item) => dispatch({ type: "ADD_ITEM", payload: item }),
       removeItem: (productId, size, color) =>
         dispatch({ type: "REMOVE_ITEM", payload: { productId, size, color } }),
@@ -158,7 +173,7 @@ export function CartProvider({ children }: { children: ReactNode }) {
       clearCart: () => dispatch({ type: "CLEAR_CART" }),
       cartCount,
     };
-  }, [state.items]);
+  }, [state.items, state.hydrated]);
 
   return <CartContext.Provider value={value}>{children}</CartContext.Provider>;
 }

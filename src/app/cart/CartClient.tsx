@@ -2,68 +2,30 @@
 
 import Image from "next/image";
 import Link from "next/link";
-import { useEffect, useState } from "react";
 import { Footer } from "@/components/layout/Footer";
 import { Navbar } from "@/components/layout/Navbar";
 import { Button } from "@/components/ui/Button";
 import { useCart } from "@/context/CartContext";
+import { useCartProducts } from "@/hooks/useCartProducts";
 import { formatPrice } from "@/lib/formatPrice";
 import { getSafeImageUrl } from "@/lib/getSafeImageUrl";
-import type { Product } from "@/types/product";
 
 export function CartClient() {
   const { cartItems, removeItem, updateQuantity } = useCart();
-  const [mounted, setMounted] = useState(false);
-  const [products, setProducts] = useState<Product[]>([]);
-  const [productsLoading, setProductsLoading] = useState(false);
+  const { products, isLoading } = useCartProducts();
 
-  useEffect(() => setMounted(true), []);
-
-  useEffect(() => {
-    if (!mounted || cartItems.length === 0) {
-      setProducts([]);
-      setProductsLoading(false);
-      return;
-    }
-
-    const ids = [...new Set(cartItems.map((item) => item.productId))];
-    const query = ids.map((id) => `ids=${encodeURIComponent(id)}`).join("&");
-
-    setProductsLoading(true);
-    let cancelled = false;
-
-    fetch(`/api/products/by-ids?${query}`)
-      .then((res) => res.json())
-      .then((data: unknown) => {
-        if (!cancelled) {
-          setProducts(Array.isArray(data) ? (data as Product[]) : []);
-          setProductsLoading(false);
-        }
-      })
-      .catch(() => {
-        if (!cancelled) setProductsLoading(false);
-      });
-
-    return () => {
-      cancelled = true;
-    };
-  }, [mounted, cartItems]);
-
-  const subtotal =
-    mounted && !productsLoading
-      ? cartItems.reduce((sum, item) => {
-          const product = products.find((entry) => entry.id === item.productId);
-          return sum + (product?.price ?? 0) * item.quantity;
-        }, 0)
-      : 0;
+  const subtotal = isLoading
+    ? 0
+    : cartItems.reduce((sum, item) => {
+        const product = products.find((entry) => entry.id === item.productId);
+        return sum + (product?.price ?? 0) * item.quantity;
+      }, 0);
 
   const currency =
-    mounted && cartItems.length > 0
+    cartItems.length > 0
       ? (products.find((entry) => entry.id === cartItems[0].productId)
           ?.currency ?? "NGN")
       : "NGN";
-
-  const isLoading = !mounted || productsLoading;
 
   return (
     <>
