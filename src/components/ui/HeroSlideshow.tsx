@@ -74,7 +74,7 @@ export function HeroSlideshow({ images, interval = 4000 }: HeroSlideshowProps) {
           onClick={() => setPausedByUser(!paused)}
           aria-pressed={paused}
           aria-label={paused ? "Play slideshow" : "Pause slideshow"}
-          className="absolute bottom-4 right-4 z-10 flex h-9 w-9 items-center justify-center rounded-full bg-background/40 text-on-surface backdrop-blur-sm transition-colors hover:bg-background/60 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent focus-visible:ring-offset-2 focus-visible:ring-offset-background"
+          className="absolute bottom-4 right-4 z-10 flex h-9 w-9 items-center justify-center rounded-full bg-background/40 text-on-surface opacity-0 backdrop-blur-sm transition pointer-events-none hover:bg-background/60 focus-visible:pointer-events-auto focus-visible:opacity-100 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent focus-visible:ring-offset-2 focus-visible:ring-offset-background"
         >
           {paused ? (
             <svg

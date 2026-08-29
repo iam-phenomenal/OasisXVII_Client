@@ -54,7 +54,7 @@ export function Navbar({ variant = "default" }: NavbarProps) {
             <span className="material-symbols-outlined text-sm transition-transform pointer-fine:group-hover:-translate-x-1">
               arrow_back
             </span>
-            Back to Cart
+            Back to Bag
           </Link>
         </div>
       </header>

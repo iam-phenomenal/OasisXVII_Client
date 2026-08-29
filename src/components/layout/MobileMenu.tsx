@@ -13,7 +13,7 @@ interface MobileMenuProps {
 const mobileLinks = [
   { href: "/", label: "HOME" },
   { href: "/shop", label: "SHOP" },
-  { href: "/cart", label: "CART" },
+  { href: "/cart", label: "BAG" },
 ];
 
 export function MobileMenu({ open, onClose }: MobileMenuProps) {

@@ -1,6 +1,7 @@
 "use client";
 
-import { useEffect, useRef, useState } from "react";
+import Link from "next/link";
+import { useState } from "react";
 import { useCart } from "@/context/CartContext";
 import { formatPrice } from "@/lib/formatPrice";
 import type { Product } from "@/types/product";
@@ -9,27 +10,32 @@ import { Dialog } from "@/components/ui/Dialog";
 import { fitNotes, getSizeChart } from "@/data/sizeGuide";
 
 export function ProductInfoPanel({ product }: { product: Product }) {
-  const { addItem } = useCart();
+  const { addItem, cartItems, hydrated } = useCart();
   const [selectedSize, setSelectedSize] = useState<string | null>(null);
-  const [added, setAdded] = useState(false);
   const [sizeGuideOpen, setSizeGuideOpen] = useState(false);
-  const resetTimerRef = useRef<number | null>(null);
 
   // Accessories are one-size and have no chart, so they get no trigger at all.
   const sizeChart = getSizeChart(product.category);
   const fitValue = product.specs.Fit;
   const fitNote = fitValue ? fitNotes[fitValue] : undefined;
 
-  useEffect(() => {
-    return () => {
-      if (resetTimerRef.current) {
-        window.clearTimeout(resetTimerRef.current);
-      }
-    };
-  }, []);
+  // Matched on the same identity the reducer uses, so this check and ADD_ITEM
+  // can never disagree about what counts as the same line. Gated on `hydrated`
+  // because an unread cart looks empty, which would wrongly re-enable the add.
+  const isInBag =
+    hydrated &&
+    selectedSize !== null &&
+    cartItems.some(
+      (item) =>
+        item.productId === product.id &&
+        item.size === selectedSize &&
+        item.color === product.colors[0],
+    );
 
   function handleAddToCart() {
-    if (!selectedSize) return;
+    // Adding again would bump the existing line's quantity rather than being
+    // rejected, so guard here too and not only via the disabled attribute.
+    if (!selectedSize || isInBag) return;
 
     addItem({
       productId: product.id,
@@ -37,16 +43,6 @@ export function ProductInfoPanel({ product }: { product: Product }) {
       color: product.colors[0],
       quantity: 1,
     });
-
-    setAdded(true);
-
-    if (resetTimerRef.current) {
-      window.clearTimeout(resetTimerRef.current);
-    }
-
-    resetTimerRef.current = window.setTimeout(() => {
-      setAdded(false);
-    }, 1500);
   }
 
   return (
@@ -112,21 +108,31 @@ export function ProductInfoPanel({ product }: { product: Product }) {
           type="button"
           variant="primary"
           fullWidth
-          disabled={!selectedSize}
+          disabled={!selectedSize || isInBag}
           className="h-24 text-2xl"
           onClick={handleAddToCart}
         >
-          {added ? (
+          {isInBag ? (
             <span className="inline-flex items-center gap-2">
               <span className="material-symbols-outlined text-base">check</span>
-              ADDED
+              IN BAG
             </span>
           ) : (
-            "ADD TO CART"
+            "ADD TO BAG"
           )}
         </Button>
+        {isInBag ? (
+          <div className="mt-6 text-center">
+            <Link
+              href="/cart"
+              className="font-headline font-bold uppercase text-xs tracking-[0.3em] text-on-surface-variant underline underline-offset-4 decoration-outline-variant transition-colors hover:text-on-surface hover:decoration-on-surface-primary focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent focus-visible:ring-offset-2 focus-visible:ring-offset-background"
+            >
+              VIEW BAG
+            </Link>
+          </div>
+        ) : null}
         <span aria-live="polite" className="sr-only">
-          {added ? "Added to bag" : ""}
+          {isInBag ? `${product.name}, size ${selectedSize}, is in your bag` : ""}
         </span>
       </div>
 
