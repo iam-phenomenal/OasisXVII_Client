@@ -21,8 +21,8 @@ export function ProductCard({ product, priority = false }: ProductCardProps) {
     .join(" ");
 
   const imageClasses = [
-    "object-cover object-[center_20%] transition-all duration-700",
-    isSoldOut ? "opacity-40" : "group-hover:scale-105",
+    "object-cover object-[center_20%] transition-transform duration-700",
+    isSoldOut ? "opacity-40" : "pointer-fine:group-hover:scale-105",
   ]
     .filter(Boolean)
     .join(" ");
@@ -33,7 +33,7 @@ export function ProductCard({ product, priority = false }: ProductCardProps) {
 
   const titleClasses = [
     "font-headline font-black uppercase tracking-tight text-xl transition-colors",
-    isSoldOut ? "" : "group-hover:text-primary",
+    isSoldOut ? "" : "group-hover:text-on-surface-primary",
   ]
     .filter(Boolean)
     .join(" ");

@@ -41,6 +41,7 @@ export function SortDropdown() {
         value={selectedSort}
         onChange={(event) => handleSortChange(event.target.value)}
         className="appearance-none bg-surface-container border-b-2 border-primary text-on-surface py-2 pr-12 pl-4 font-headline font-bold uppercase w-full"
+        style={{ backgroundColor: "#18181F", color: "#E4E1E9", colorScheme: "dark" }}
       >
         {sortOptions.map((option) => (
           <option key={option.value} value={option.value}>
@@ -48,7 +49,7 @@ export function SortDropdown() {
           </option>
         ))}
       </select>
-      <span className="material-symbols-outlined absolute right-2 top-1/2 -translate-y-1/2 text-primary pointer-events-none">
+      <span className="material-symbols-outlined absolute right-2 top-1/2 -translate-y-1/2 text-on-surface-primary pointer-events-none">
         expand_more
       </span>
     </div>

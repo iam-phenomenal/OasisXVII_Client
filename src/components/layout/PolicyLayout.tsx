@@ -6,7 +6,7 @@ import { ALL_POLICIES } from "@/data/policies";
 import type { InlineNode, Policy, PolicyBlock } from "@/data/policies";
 
 const linkClasses =
-  "text-on-surface underline underline-offset-4 decoration-primary hover:text-primary transition-colors";
+  "text-on-surface underline underline-offset-4 decoration-on-surface-primary hover:text-on-surface-primary transition-colors";
 
 function InlineContent({ nodes }: { nodes: InlineNode[] }) {
   return (
@@ -46,8 +46,8 @@ function Blocks({ blocks }: { blocks: PolicyBlock[] }) {
                 key={item}
                 className="flex gap-3 text-on-surface-variant font-body text-sm leading-relaxed"
               >
-                <span aria-hidden className="text-primary select-none">
-                  —
+                <span aria-hidden className="text-on-surface-primary select-none">
+                  •
                 </span>
                 <span>{item}</span>
               </li>
@@ -71,7 +71,7 @@ export function PolicyLayout({ policy }: { policy: Policy }) {
       <main className="pt-32 pb-32 px-6 lg:px-12">
         <div className="max-w-5xl mx-auto">
           <header className="border-b border-outline-variant pb-10">
-            <p className="font-headline font-black text-[10px] tracking-[0.5em] uppercase text-primary">
+            <p className="font-headline font-black text-[10px] tracking-[0.5em] uppercase text-on-surface-primary">
               OasisXVII CORP
             </p>
             <h1 className="mt-4 font-serif font-black text-4xl md:text-6xl uppercase tracking-tighter">
@@ -99,7 +99,7 @@ export function PolicyLayout({ policy }: { policy: Policy }) {
                     id={section.id}
                     className="scroll-mt-32"
                   >
-                    <h2 className="font-headline font-black text-sm tracking-[0.25em] uppercase text-primary mb-4">
+                    <h2 className="font-headline font-black text-sm tracking-[0.25em] uppercase text-on-surface-primary mb-4">
                       {section.heading}
                     </h2>
                     <Blocks blocks={section.blocks} />
@@ -110,7 +110,7 @@ export function PolicyLayout({ policy }: { policy: Policy }) {
           </div>
 
           <div className="mt-24 border-t border-outline-variant pt-10">
-            <h2 className="font-headline font-black text-[10px] tracking-[0.4em] uppercase text-primary">
+            <h2 className="font-headline font-black text-[10px] tracking-[0.4em] uppercase text-on-surface-primary">
               Related Policies
             </h2>
             <ul className="mt-4 flex flex-wrap gap-x-8 gap-y-3">

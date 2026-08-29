@@ -23,7 +23,7 @@ export function ImageGallery({ images, productName }: ImageGalleryProps) {
             src={validImages[activeIndex]}
             alt={productName}
             fill
-            className="object-cover object-[center_20%] transition-all duration-700 group-hover:scale-105"
+            className="object-cover object-[center_20%] transition-transform duration-700 pointer-fine:group-hover:scale-105"
             priority
             sizes="(min-width: 1024px) 58vw, 100vw"
           />
@@ -43,7 +43,7 @@ export function ImageGallery({ images, productName }: ImageGalleryProps) {
                 aria-label={`Show ${productName} image ${index + 1}`}
                 aria-pressed={isActive}
                 className={[
-                  "aspect-[4/5] bg-surface-container overflow-hidden relative transition-all duration-300",
+                  "aspect-[4/5] bg-surface-container overflow-hidden relative transition-[opacity,box-shadow] duration-300",
                   isActive
                     ? "ring-2 ring-primary ring-offset-2 ring-offset-background"
                     : "opacity-60 hover:opacity-100 cursor-crosshair",

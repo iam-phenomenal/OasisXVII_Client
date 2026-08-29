@@ -4,7 +4,7 @@ import Link from "next/link";
 const directoryLinks = [
   { href: "/", label: "Home" },
   { href: "/shop", label: "Shop" },
-  { href: "/archive", label: "Archive" },
+  { href: "/shop", label: "Archive" },
 ];
 
 const legalLinks = [
@@ -27,34 +27,7 @@ export function Footer() {
             className="h-9 w-auto object-contain"
           />
 
-          <h2 className="mt-6 font-headline font-black uppercase text-xl text-primary italic">
-            Stay Connected
-          </h2>
-
-          <p className="mt-3 text-on-surface-variant text-sm font-body leading-relaxed">
-            Get updates on new drops, archive releases, and exclusive early
-            access.
-          </p>
-
-          <form className="mt-6 flex border-b border-primary/50 group focus-within:border-primary transition-colors">
-            <input
-              type="email"
-              required
-              placeholder="Your Email"
-              className="bg-transparent py-3 w-full focus:outline-none text-sm font-headline uppercase tracking-widest placeholder:text-on-surface-variant/30"
-            />
-            <button
-              type="submit"
-              aria-label="Submit email"
-              className="px-3 text-primary"
-            >
-              <span className="material-symbols-outlined transition-transform group-hover:translate-x-2">
-                east
-              </span>
-            </button>
-          </form>
-
-          <p className="hidden md:block mt-4 text-[9px] tracking-[0.5em] uppercase font-headline font-black text-on-surface-variant/40">
+          <p className="hidden md:block mt-6 text-[9px] tracking-[0.5em] uppercase font-headline font-black text-on-surface-variant/40">
             © 2026 OasisXVII CORP
           </p>
         </div>
@@ -62,12 +35,12 @@ export function Footer() {
         <div className="flex flex-col justify-between gap-6">
           <div className="grid grid-cols-2 gap-16">
             <div>
-              <h3 className="font-headline font-black text-[11px] tracking-[0.4em] uppercase text-primary">
+              <h3 className="font-headline font-black text-[11px] tracking-[0.4em] uppercase text-on-surface-primary">
                 Directory
               </h3>
               <ul className="mt-4 space-y-2">
                 {directoryLinks.map((link) => (
-                  <li key={link.href}>
+                  <li key={link.label}>
                     <Link
                       href={link.href}
                       className="text-on-surface-variant hover:text-on-surface transition-colors text-xs font-headline font-bold tracking-widest uppercase"
@@ -80,12 +53,12 @@ export function Footer() {
             </div>
 
             <div>
-              <h3 className="font-headline font-black text-[11px] tracking-[0.4em] uppercase text-primary">
+              <h3 className="font-headline font-black text-[11px] tracking-[0.4em] uppercase text-on-surface-primary">
                 Legal
               </h3>
               <ul className="mt-4 space-y-2">
                 {legalLinks.map((link) => (
-                  <li key={link.href}>
+                  <li key={link.label}>
                     <Link
                       href={link.href}
                       className="text-on-surface-variant hover:text-on-surface transition-colors text-xs font-headline font-bold tracking-widest uppercase"

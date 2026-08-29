@@ -58,7 +58,7 @@ export default async function ProductPage({
             </h2>
             <Link
               href="/shop"
-              className="text-xs font-bold uppercase tracking-[0.3em] hover:text-primary transition-colors"
+              className="text-xs font-bold uppercase tracking-[0.3em] hover:text-on-surface-primary transition-colors"
             >
               VIEW ALL
             </Link>

@@ -1,7 +1,7 @@
 "use client";
 
 import Image from "next/image";
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useId, useMemo, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
 import { Navbar } from "@/components/layout/Navbar";
 import { Footer } from "@/components/layout/Footer";
@@ -17,18 +17,40 @@ interface CheckoutClientProps {
   dutyTaxNgn: number;
 }
 
+type FieldKey =
+  | "email"
+  | "fullName"
+  | "address"
+  | "country"
+  | "city"
+  | "state"
+  | "postalCode";
+
+// Visual/DOM order of the form, which is what "focus the first invalid field"
+// has to mean. Deliberately not derived from Object.keys(form) — that order is
+// incidental and would silently drift if the state object were reordered.
+const FIELD_ORDER: readonly FieldKey[] = [
+  "email",
+  "fullName",
+  "address",
+  "country",
+  "city",
+  "state",
+  "postalCode",
+];
+
 export function CheckoutClient({
   logisticsFeeNgn,
   dutyTaxNgn,
 }: CheckoutClientProps) {
   const router = useRouter();
   const { cartItems, clearCart, hydrated } = useCart();
-  const { products, isLoading } = useCartProducts();
+  const { products, isLoading, hasError, retry } = useCartProducts();
 
   const [emailOptIn, setEmailOptIn] = useState(true);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [orderError, setOrderError] = useState("");
-  const [form, setForm] = useState({
+  const [form, setForm] = useState<Record<FieldKey, string>>({
     email: "",
     fullName: "",
     address: "",
@@ -37,7 +59,7 @@ export function CheckoutClient({
     country: "NG",
     state: "",
   });
-  const [errors, setErrors] = useState({
+  const [errors, setErrors] = useState<Record<FieldKey, string>>({
     email: "",
     fullName: "",
     address: "",
@@ -46,6 +68,20 @@ export function CheckoutClient({
     country: "",
     state: "",
   });
+
+  const fieldRefs = useRef<Partial<Record<FieldKey, HTMLElement | null>>>({});
+
+  // One stable callback per field, built once, so passing these as refs does
+  // not detach and re-attach on every render.
+  const setFieldRef = useMemo(() => {
+    const map = {} as Record<FieldKey, (el: HTMLElement | null) => void>;
+    for (const key of FIELD_ORDER) {
+      map[key] = (el) => {
+        fieldRefs.current[key] = el;
+      };
+    }
+    return map;
+  }, []);
 
   useEffect(() => {
     if (hydrated && cartItems.length === 0) {
@@ -65,6 +101,8 @@ export function CheckoutClient({
       ? (products.find((entry) => entry.id === cartItems[0].productId)
           ?.currency ?? "NGN")
       : "NGN";
+
+  const totalsUnavailable = isLoading || hasError;
 
   const logisticsFee = currency === "NGN" ? logisticsFeeNgn : 0;
   const dutyTax = currency === "NGN" ? dutyTaxNgn : 0;
@@ -119,8 +157,8 @@ export function CheckoutClient({
         return value.trim().length < 5 ? "Enter a valid street address" : "";
       case "city":
         return value.trim().length < 2 ? "City is required" : "";
-      // case "postalCode":
-      //   return value.trim() === "" ? "Postal code is required" : "";
+      // postalCode is deliberately optional — plenty of Nigerian addresses
+      // ship without one. Its label says so; it falls through to "" below.
       case "country":
         return value.trim() === "" ? "Country is required" : "";
       case "state":
@@ -137,13 +175,18 @@ export function CheckoutClient({
   }
 
   function validate(): boolean {
-    const next = (Object.keys(form) as (keyof typeof form)[]).reduce<
-      typeof errors
-    >((acc, key) => ({ ...acc, [key]: getFieldError(key, form[key]) }), {
-      ...errors,
-    });
+    const next = FIELD_ORDER.reduce<Record<FieldKey, string>>(
+      (acc, key) => ({ ...acc, [key]: getFieldError(key, form[key]) }),
+      { ...errors },
+    );
     setErrors(next);
-    return Object.values(next).every((e) => e === "");
+
+    const firstInvalid = FIELD_ORDER.find((key) => next[key] !== "");
+    if (firstInvalid) {
+      fieldRefs.current[firstInvalid]?.focus();
+      return false;
+    }
+    return true;
   }
 
   async function handleCompletePurchase() {
@@ -201,11 +244,17 @@ export function CheckoutClient({
           <section className="lg:col-span-7 space-y-20">
             <div>
               <h1 className="font-serif font-black text-4xl tracking-tighter uppercase mb-10 italic">
-                Contact <span className="text-primary">_</span>
+                Contact <span className="text-on-surface-primary">_</span>
               </h1>
               <div className="space-y-8">
                 <FloatingInput
                   label="Email"
+                  name="email"
+                  type="email"
+                  inputMode="email"
+                  autoComplete="email"
+                  spellCheck={false}
+                  inputRef={setFieldRef.email}
                   placeholder="you@example.com"
                   value={form.email}
                   onChange={(value) => updateField("email", value)}
@@ -213,12 +262,18 @@ export function CheckoutClient({
                   error={errors.email}
                 />
 
-                <button
-                  type="button"
-                  onClick={() => setEmailOptIn((value) => !value)}
-                  className="inline-flex items-center gap-3"
-                >
-                  <span className="w-5 h-5 border border-outline flex items-center justify-center">
+                <label className="inline-flex items-center gap-3 cursor-pointer">
+                  <input
+                    type="checkbox"
+                    name="emailOptIn"
+                    checked={emailOptIn}
+                    onChange={(event) => setEmailOptIn(event.target.checked)}
+                    className="peer sr-only"
+                  />
+                  <span
+                    aria-hidden
+                    className="w-5 h-5 border border-outline flex items-center justify-center peer-focus-visible:ring-2 peer-focus-visible:ring-accent peer-focus-visible:ring-offset-2 peer-focus-visible:ring-offset-background"
+                  >
                     {emailOptIn ? (
                       <span className="w-2 h-2 bg-primary" />
                     ) : null}
@@ -226,18 +281,21 @@ export function CheckoutClient({
                   <span className="text-[10px] font-bold uppercase tracking-widest text-on-surface-variant">
                     Email me with news and exclusive drops
                   </span>
-                </button>
+                </label>
               </div>
             </div>
 
             <div>
               <h2 className="font-headline font-black text-4xl tracking-tighter uppercase mb-10 italic">
-                Shipping <span className="text-primary">_</span>
+                Shipping <span className="text-on-surface-primary">_</span>
               </h2>
               <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
                 <div className="md:col-span-2">
                   <FloatingInput
                     label="Full Name"
+                    name="name"
+                    autoComplete="name"
+                    inputRef={setFieldRef.fullName}
                     placeholder="Enter your full name"
                     value={form.fullName}
                     onChange={(value) => updateField("fullName", value)}
@@ -248,6 +306,9 @@ export function CheckoutClient({
                 <div className="md:col-span-2">
                   <FloatingInput
                     label="Street Address"
+                    name="address"
+                    autoComplete="street-address"
+                    inputRef={setFieldRef.address}
                     placeholder="House number and street"
                     value={form.address}
                     onChange={(value) => updateField("address", value)}
@@ -258,6 +319,9 @@ export function CheckoutClient({
                 <div className="md:col-span-2">
                   <FloatingSelect
                     label="Country"
+                    name="country"
+                    autoComplete="country"
+                    selectRef={setFieldRef.country}
                     value={form.country}
                     onChange={handleCountryChange}
                     onBlur={() => validateField("country")}
@@ -268,6 +332,9 @@ export function CheckoutClient({
                 <div className={stateOptions.length > 0 ? "" : "md:col-span-2"}>
                   <FloatingInput
                     label="City"
+                    name="city"
+                    autoComplete="address-level2"
+                    inputRef={setFieldRef.city}
                     placeholder="City"
                     value={form.city}
                     onChange={(value) => updateField("city", value)}
@@ -278,6 +345,9 @@ export function CheckoutClient({
                 {stateOptions.length > 0 ? (
                   <FloatingSelect
                     label="State"
+                    name="state"
+                    autoComplete="address-level1"
+                    selectRef={setFieldRef.state}
                     value={form.state}
                     onChange={(value) => updateField("state", value)}
                     onBlur={() => validateField("state")}
@@ -287,7 +357,11 @@ export function CheckoutClient({
                 ) : null}
                 <div className="md:col-span-2">
                   <FloatingInput
-                    label="Postal Code"
+                    label="Postal Code (Optional)"
+                    name="postalCode"
+                    inputMode="numeric"
+                    autoComplete="postal-code"
+                    inputRef={setFieldRef.postalCode}
                     placeholder="Postal code"
                     value={form.postalCode}
                     onChange={(value) => updateField("postalCode", value)}
@@ -311,6 +385,19 @@ export function CheckoutClient({
                   <p className="text-on-surface-variant font-headline text-[10px] uppercase tracking-widest animate-pulse">
                     Loading items...
                   </p>
+                ) : hasError ? (
+                  <div>
+                    <p className="text-on-surface-variant font-headline text-[10px] uppercase tracking-widest mb-4">
+                      Couldn&apos;t load your bag
+                    </p>
+                    <button
+                      type="button"
+                      onClick={retry}
+                      className="font-headline text-[10px] font-bold uppercase tracking-widest text-on-surface-primary underline underline-offset-4 transition-colors hover:text-on-surface focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent focus-visible:ring-offset-2 focus-visible:ring-offset-background"
+                    >
+                      Try again
+                    </button>
+                  </div>
                 ) : (
                   cartItems.map((item) => {
                     const product = products.find(
@@ -361,22 +448,22 @@ export function CheckoutClient({
               <div className="pt-10 border-t border-outline space-y-4">
                 <div className="flex justify-between text-[10px] font-bold uppercase tracking-widest text-on-surface-variant">
                   <span>Subtotal</span>
-                  <span>{isLoading ? "—" : formatPrice(subtotal, currency)}</span>
+                  <span>{totalsUnavailable ? "—" : formatPrice(subtotal, currency)}</span>
                 </div>
                 <div className="flex justify-between text-[10px] font-bold uppercase tracking-widest text-on-surface-variant">
                   <span>Logistics</span>
-                  <span>{isLoading ? "—" : formatPrice(logisticsFee, currency)}</span>
+                  <span>{totalsUnavailable ? "—" : formatPrice(logisticsFee, currency)}</span>
                 </div>
                 <div className="flex justify-between text-[10px] font-bold uppercase tracking-widest text-on-surface-variant">
                   <span>Duty &amp; Tax</span>
-                  <span>{isLoading ? "—" : formatPrice(dutyTax, currency)}</span>
+                  <span>{totalsUnavailable ? "—" : formatPrice(dutyTax, currency)}</span>
                 </div>
                 <div className="flex justify-between items-end">
                   <span className="text-[10px] font-bold uppercase tracking-widest text-on-surface-variant">
                     Total Due
                   </span>
-                  <span className="text-2xl font-headline font-black uppercase tracking-tighter text-primary underline decoration-2 underline-offset-8">
-                    {isLoading ? "—" : formatPrice(totalDue, currency)}
+                  <span className="text-2xl font-headline font-black uppercase tracking-tighter text-on-surface-primary underline decoration-2 underline-offset-8">
+                    {totalsUnavailable ? "—" : formatPrice(totalDue, currency)}
                   </span>
                 </div>
               </div>
@@ -384,19 +471,21 @@ export function CheckoutClient({
               <button
                 type="button"
                 onClick={handleCompletePurchase}
-                disabled={isSubmitting || isLoading}
-                className="w-full bg-primary py-6 mt-12 text-on-primary font-headline font-black uppercase tracking-[0.3em] text-sm shadow-wine-glow hover:shadow-wine-glow-hover transition-all duration-300 relative overflow-hidden group disabled:opacity-60 disabled:cursor-not-allowed"
+                disabled={isSubmitting || isLoading || hasError}
+                className="w-full bg-primary py-6 mt-12 text-on-primary font-headline font-black uppercase tracking-[0.3em] text-sm shadow-wine-glow hover:shadow-wine-glow-hover transition-[box-shadow,opacity] duration-300 relative overflow-hidden group disabled:opacity-60 disabled:cursor-not-allowed"
               >
-                <div className="absolute inset-0 bg-white/10 translate-y-full group-hover:translate-y-0 transition-transform duration-300" />
+                <div className="absolute inset-0 bg-white/10 translate-y-full pointer-fine:group-hover:translate-y-0 transition-transform duration-300" />
                 <span className="relative z-10">
                   {isSubmitting ? "Redirecting to Paystack..." : "Pay with Paystack"}
                 </span>
               </button>
-              {orderError ? (
-                <p className="text-[10px] font-bold uppercase tracking-widest text-error mt-4">
-                  {orderError}
-                </p>
-              ) : null}
+              <p
+                role="alert"
+                aria-live="polite"
+                className="text-[10px] font-bold uppercase tracking-widest text-error mt-4 empty:mt-0"
+              >
+                {orderError}
+              </p>
 
               <div className="mt-6 border border-outline px-6 py-5 flex items-center gap-3">
                 <span className="text-[9px] font-bold uppercase tracking-widest text-on-surface-variant">
@@ -428,35 +517,52 @@ export function CheckoutClient({
 
 function FloatingSelect({
   label,
+  name,
   value,
   onChange,
   onBlur,
   options,
+  autoComplete,
   error,
+  selectRef,
 }: {
   label: string;
+  name: string;
   value: string;
   onChange: (value: string) => void;
   onBlur?: () => void;
   options: { value: string; label: string }[];
+  autoComplete?: string;
   error?: string;
+  selectRef?: (el: HTMLSelectElement | null) => void;
 }) {
+  const fieldId = useId();
+  const errorId = `${fieldId}-error`;
+
   return (
     <div className="relative group">
       <label
+        htmlFor={fieldId}
         className={`absolute -top-2 left-4 bg-surface px-2 text-[10px] font-bold uppercase tracking-widest transition-colors z-10 ${
           error
             ? "text-error"
-            : "text-on-surface-variant group-focus-within:text-primary"
+            : "text-on-surface-variant group-focus-within:text-on-surface-primary"
         }`}
       >
         {label}
       </label>
       <div className="relative">
         <select
-          className={`w-full bg-surface border transition-all outline-none p-5 font-body text-sm text-on-surface appearance-none pr-12 ${
+          id={fieldId}
+          ref={selectRef}
+          name={name}
+          autoComplete={autoComplete}
+          aria-invalid={error ? true : undefined}
+          aria-describedby={error ? errorId : undefined}
+          className={`w-full bg-surface border transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent focus-visible:ring-offset-2 focus-visible:ring-offset-background p-5 font-body text-sm text-on-surface appearance-none pr-12 ${
             error ? "border-error" : "border-outline focus:border-primary"
           }`}
+          style={{ backgroundColor: "#131318", color: "#E4E1E9", colorScheme: "dark" }}
           value={value}
           onChange={(e) => onChange(e.target.value)}
           onBlur={onBlur}
@@ -476,7 +582,10 @@ function FloatingSelect({
         </span>
       </div>
       {error && (
-        <p className="text-[10px] font-bold uppercase tracking-widest text-error mt-2">
+        <p
+          id={errorId}
+          className="text-[10px] font-bold uppercase tracking-widest text-error mt-2"
+        >
           {error}
         </p>
       )}
@@ -486,44 +595,69 @@ function FloatingSelect({
 
 function FloatingInput({
   label,
+  name,
   value,
   onChange,
   onBlur,
   placeholder,
   type = "text",
+  inputMode,
+  autoComplete,
+  spellCheck,
   error,
+  inputRef,
 }: {
   label: string;
+  name: string;
   value: string;
   onChange: (value: string) => void;
   onBlur?: () => void;
   placeholder: string;
   type?: string;
+  inputMode?: "text" | "email" | "numeric";
+  autoComplete?: string;
+  spellCheck?: boolean;
   error?: string;
+  inputRef?: (el: HTMLInputElement | null) => void;
 }) {
+  const fieldId = useId();
+  const errorId = `${fieldId}-error`;
+
   return (
     <div className="relative group">
       <label
+        htmlFor={fieldId}
         className={`absolute -top-2 left-4 bg-surface px-2 text-[10px] font-bold uppercase tracking-widest transition-colors ${
           error
             ? "text-error"
-            : "text-on-surface-variant group-focus-within:text-primary"
+            : "text-on-surface-variant group-focus-within:text-on-surface-primary"
         }`}
       >
         {label}
       </label>
       <input
-        className={`w-full bg-transparent border transition-all outline-none p-5 font-body text-sm ${
+        id={fieldId}
+        ref={inputRef}
+        name={name}
+        type={type}
+        inputMode={inputMode}
+        autoComplete={autoComplete}
+        spellCheck={spellCheck}
+        aria-invalid={error ? true : undefined}
+        aria-describedby={error ? errorId : undefined}
+        className={`w-full bg-transparent border transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent focus-visible:ring-offset-2 focus-visible:ring-offset-background p-5 font-body text-sm ${
           error ? "border-error" : "border-outline focus:border-primary"
         }`}
         placeholder={placeholder}
-        type={type}
         value={value}
         onChange={(event) => onChange(event.target.value)}
         onBlur={onBlur}
       />
       {error && (
-        <p className="text-[10px] font-bold uppercase tracking-widest text-error mt-2">
+        <p
+          id={errorId}
+          className="text-[10px] font-bold uppercase tracking-widest text-error mt-2"
+        >
           {error}
         </p>
       )}

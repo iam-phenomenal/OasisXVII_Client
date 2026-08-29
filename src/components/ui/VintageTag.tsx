@@ -13,7 +13,7 @@ export function VintageTag({
 }: VintageTagProps) {
   const variantClasses =
     variant === "wine"
-      ? "bg-primary-container text-primary border border-primary/20"
+      ? "bg-primary-container text-on-surface-primary border border-primary/20"
       : "bg-tertiary-fixed-dim text-on-tertiary";
 
   const sizeClasses =

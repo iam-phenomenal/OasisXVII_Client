@@ -77,7 +77,7 @@ export default async function Home() {
               </h2>
               <Link
                 href="/shop"
-                className="font-display text-accent uppercase tracking-[0.2em] text-lg hover:underline underline-offset-8 transition-all"
+                className="font-display text-accent uppercase tracking-[0.2em] text-lg hover:underline underline-offset-8 transition-colors"
               >
                 View Archive →
               </Link>

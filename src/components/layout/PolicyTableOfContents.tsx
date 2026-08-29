@@ -39,7 +39,7 @@ export function PolicyTableOfContents({
 
   return (
     <nav aria-label="On this page" className="sticky top-32">
-      <h2 className="font-headline font-black text-[10px] tracking-[0.4em] uppercase text-primary">
+      <h2 className="font-headline font-black text-[10px] tracking-[0.4em] uppercase text-on-surface-primary">
         On This Page
       </h2>
       <ul className="mt-4 space-y-2 border-l border-outline-variant">

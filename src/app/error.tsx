@@ -11,6 +11,7 @@ export default function Error({
 }) {
   return (
     <main className="min-h-screen flex flex-col items-center justify-center bg-background text-on-surface px-6 text-center">
+      {/* eslint-disable-next-line no-restricted-syntax -- decorative ghost numeral at opacity-20, not readable text */}
       <p className="font-headline text-[20vw] font-black leading-none tracking-tighter text-primary opacity-20 select-none">
         ERR
       </p>

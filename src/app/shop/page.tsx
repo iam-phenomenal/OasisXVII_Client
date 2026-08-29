@@ -113,7 +113,7 @@ export default async function ShopPage({
           {page > 1 ? (
             <Link
               href={pageUrl(page - 1)}
-              className="font-headline font-bold uppercase tracking-widest hover:text-primary transition-colors"
+              className="font-headline font-bold uppercase tracking-widest hover:text-on-surface-primary transition-colors"
             >
               Prev
             </Link>
@@ -122,7 +122,7 @@ export default async function ShopPage({
               Prev
             </span>
           )}
-          <span className="font-headline font-black text-2xl text-primary italic">
+          <span className="font-headline font-black text-2xl text-on-surface-primary italic">
             {pad(page)}
           </span>
           <div className="w-8 h-[2px] bg-primary/30" />
@@ -132,7 +132,7 @@ export default async function ShopPage({
           {page < totalPages ? (
             <Link
               href={pageUrl(page + 1)}
-              className="font-headline font-bold uppercase tracking-widest hover:text-primary transition-colors"
+              className="font-headline font-bold uppercase tracking-widest hover:text-on-surface-primary transition-colors"
             >
               Next
             </Link>

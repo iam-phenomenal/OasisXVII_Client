@@ -3,6 +3,7 @@
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useEffect } from "react";
+import { lockScroll, unlockScroll } from "@/lib/scrollLock";
 
 interface MobileMenuProps {
   open: boolean;
@@ -23,11 +24,11 @@ export function MobileMenu({ open, onClose }: MobileMenuProps) {
   }, [pathname, onClose]);
 
   useEffect(() => {
-    document.body.style.overflow = open ? "hidden" : "";
+    if (!open) return;
 
-    return () => {
-      document.body.style.overflow = "";
-    };
+    lockScroll();
+
+    return unlockScroll;
   }, [open]);
 
   if (!open) return null;
@@ -55,7 +56,7 @@ export function MobileMenu({ open, onClose }: MobileMenuProps) {
               className={[
                 "px-6 py-5 font-headline font-bold uppercase tracking-widest text-sm transition-colors border-b border-on-surface/5 last:border-b-0",
                 isActive
-                  ? "text-primary border-l-2 border-l-primary pl-5"
+                  ? "text-on-surface-primary border-l-2 border-l-primary pl-5"
                   : "text-on-surface-variant hover:text-on-surface hover:bg-surface",
               ].join(" ")}
             >

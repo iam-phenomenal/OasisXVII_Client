@@ -63,7 +63,7 @@ export default async function OrderConfirmationPage({
         <div className="max-w-lg w-full text-center">
           {status === "success" && (
             <>
-              <span className="material-symbols-outlined text-primary block mb-6 text-7xl">
+              <span className="material-symbols-outlined text-on-surface-primary block mb-6 text-7xl">
                 check_circle
               </span>
               <h1 className="font-serif font-black text-5xl uppercase tracking-tighter mb-4">
@@ -88,7 +88,7 @@ export default async function OrderConfirmationPage({
                     <span className="text-[10px] font-bold uppercase tracking-widest text-on-surface-variant">
                       Total Paid
                     </span>
-                    <span className="font-headline font-black text-2xl text-primary">
+                    <span className="font-headline font-black text-2xl text-on-surface-primary">
                       {formatPrice(totalDue, currency)}
                     </span>
                   </div>

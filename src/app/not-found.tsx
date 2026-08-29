@@ -7,6 +7,7 @@ export default function NotFound() {
     <>
       <Navbar />
       <main className="min-h-screen flex flex-col items-center justify-center bg-background text-on-surface px-6 text-center pt-24">
+        {/* eslint-disable-next-line no-restricted-syntax -- decorative ghost numeral at opacity-20, not readable text */}
         <p className="font-headline text-[20vw] font-black leading-none tracking-tighter text-primary opacity-20 select-none pointer-events-none">
           404
         </p>

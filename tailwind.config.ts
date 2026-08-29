@@ -50,6 +50,9 @@ const config: Config = {
         // Primary — Deep Wine
         // DESIGN.md authority: #4A0F27
         primary: "#4A0F27",
+        // FILL ONLY. As a foreground `primary` lands between 1.04:1 and
+        // 1.26:1 on every surface in this palette — use `on-surface-primary`
+        // for wine-colored text, icons and hover states instead.
         "primary-container": "#5D111F",
         "on-primary": "#FFFFFF",
         "on-primary-container": "#FFFFFF",
@@ -78,6 +81,11 @@ const config: Config = {
         // DESIGN.md: "Don't Use Pure White — use on_surface (#E4E1E9)"
         "on-surface": "#E4E1E9",
         "on-surface-variant": "#A0A0B0",
+        // Foreground form of the wine family: 9.28:1 at worst (on
+        // surface-container-high), so it clears AA on every surface.
+        // Shares a value with `tertiary` by design — that token is the
+        // Vintage Tag chip, this one is text, and they can diverge later.
+        "on-surface-primary": "#FFB2BD",
         "on-background": "#E4E1E9",
 
         // Outline — ghost borders only, applied at low opacity

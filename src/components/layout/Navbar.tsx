@@ -39,7 +39,7 @@ export function Navbar({ variant = "default" }: NavbarProps) {
             </Link>
 
             <div className="hidden md:flex items-center gap-3 text-[10px] font-bold tracking-[0.3em] uppercase font-headline">
-              <span className="text-primary italic">Information</span>
+              <span className="text-on-surface-primary italic">Information</span>
               <span className="text-on-surface/10 font-normal">&gt;</span>
               <span className="text-on-surface-variant">Shipping</span>
               <span className="text-on-surface/10 font-normal">&gt;</span>
@@ -49,9 +49,9 @@ export function Navbar({ variant = "default" }: NavbarProps) {
 
           <Link
             href="/cart"
-            className="group text-[10px] font-bold uppercase tracking-widest hover:text-primary transition-all font-headline inline-flex items-center gap-1"
+            className="group text-[10px] font-bold uppercase tracking-widest hover:text-on-surface-primary transition-colors font-headline inline-flex items-center gap-1"
           >
-            <span className="material-symbols-outlined text-sm transition-transform group-hover:-translate-x-1">
+            <span className="material-symbols-outlined text-sm transition-transform pointer-fine:group-hover:-translate-x-1">
               arrow_back
             </span>
             Back to Cart
@@ -101,7 +101,7 @@ export function Navbar({ variant = "default" }: NavbarProps) {
           <Link
             href="/cart"
             aria-label="Open cart"
-            className="relative text-primary border-b-2 border-primary pb-1 inline-flex"
+            className="relative text-on-surface-primary border-b-2 border-primary pb-1 inline-flex"
           >
             <span className="material-symbols-outlined">shopping_cart</span>
             {cartCount > 0 ? (

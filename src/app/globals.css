@@ -1,6 +1,12 @@
 @import "tailwindcss";
 @config "../../tailwind.config.ts";
 
+/* ── Pointer-gated hover ───────────────────────────────── */
+/* Tailwind v4 gates `hover:` behind (hover: hover) on its own, but not
+   `group-hover:`. Stack this in front of those so a tap on a touch device
+   cannot leave a hover state stuck: `pointer-fine:group-hover:scale-105`. */
+@custom-variant pointer-fine (@media (hover: hover) and (pointer: fine));
+
 /* ── Material Symbols ──────────────────────────────────────── */
 .material-symbols-outlined {
   font-variation-settings:
@@ -39,8 +45,10 @@
   transition: transform 0.4s cubic-bezier(0.2, 1, 0.3, 1);
 }
 
-.product-card-hover:hover {
-  transform: translateY(-8px);
+@media (hover: hover) and (pointer: fine) {
+  .product-card-hover:hover {
+    transform: translateY(-8px);
+  }
 }
 
 /* ── Section Reveal ────────────────────────────────────────── */
@@ -91,9 +99,45 @@
   animation-delay: 640ms;
 }
 
+/* ── Dialog ────────────────────────────────────────────────── */
+@keyframes dialog-scrim-in {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+@keyframes dialog-panel-in {
+  from {
+    opacity: 0;
+    transform: translateY(16px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.dialog-scrim {
+  animation: dialog-scrim-in 0.2s ease-out forwards;
+}
+
+.dialog-panel {
+  animation: dialog-panel-in 0.3s cubic-bezier(0.2, 1, 0.3, 1) forwards;
+}
+
 @media (prefers-reduced-motion: reduce) {
   .animate-reveal,
   .animate-reveal.in-view {
+    opacity: 1;
+    transform: none;
+    animation: none;
+  }
+
+  .dialog-scrim,
+  .dialog-panel {
     opacity: 1;
     transform: none;
     animation: none;

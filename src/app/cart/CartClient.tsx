@@ -12,7 +12,7 @@ import { getSafeImageUrl } from "@/lib/getSafeImageUrl";
 
 export function CartClient() {
   const { cartItems, removeItem, updateQuantity } = useCart();
-  const { products, isLoading } = useCartProducts();
+  const { products, isLoading, hasError, retry } = useCartProducts();
 
   const subtotal = isLoading
     ? 0
@@ -20,6 +20,8 @@ export function CartClient() {
         const product = products.find((entry) => entry.id === item.productId);
         return sum + (product?.price ?? 0) * item.quantity;
       }, 0);
+
+  const totalsUnavailable = isLoading || hasError;
 
   const currency =
     cartItems.length > 0
@@ -42,6 +44,15 @@ export function CartClient() {
                 <p className="text-on-surface-variant font-headline uppercase tracking-widest animate-pulse">
                   Loading your bag...
                 </p>
+              </div>
+            ) : hasError ? (
+              <div className="p-16 text-center bg-surface-container-low">
+                <p className="text-on-surface-variant font-headline uppercase tracking-widest mb-8">
+                  Couldn&apos;t load your bag
+                </p>
+                <Button variant="primary" onClick={retry}>
+                  TRY AGAIN
+                </Button>
               </div>
             ) : cartItems.length === 0 ? (
               <div className="p-16 text-center bg-surface-container-low">
@@ -70,7 +81,7 @@ export function CartClient() {
                           src={getSafeImageUrl(product.images)!}
                           alt={product.name}
                           fill
-                          className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-110"
+                          className="w-full h-full object-cover transition-transform duration-500 pointer-fine:group-hover:scale-110"
                           sizes="(min-width: 768px) 10rem, 100vw"
                         />
                       ) : null}
@@ -84,7 +95,7 @@ export function CartClient() {
                               {product.name}
                             </span>
                             {product.badge === "Limited" ? (
-                              <span className="bg-primary-container text-primary text-[10px] font-black px-2 py-0.5 editorial-text border border-primary/20 ml-2">
+                              <span className="bg-primary-container text-on-surface-primary text-[10px] font-black px-2 py-0.5 editorial-text border border-primary/20 ml-2">
                                 LIMITED
                               </span>
                             ) : null}
@@ -129,7 +140,7 @@ export function CartClient() {
                                     item.quantity - 1,
                                   )
                                 }
-                                className="hover:text-primary transition-colors"
+                                className="hover:text-on-surface-primary transition-colors"
                               >
                                 <span className="material-symbols-outlined text-sm">
                                   remove
@@ -148,7 +159,7 @@ export function CartClient() {
                                     item.quantity + 1,
                                   )
                                 }
-                                className="hover:text-primary transition-colors"
+                                className="hover:text-on-surface-primary transition-colors"
                               >
                                 <span className="material-symbols-outlined text-sm">
                                   add
@@ -189,7 +200,7 @@ export function CartClient() {
               <div className="flex justify-between text-sm">
                 <span className="text-on-surface-variant">Subtotal</span>
                 <span>
-                  {isLoading ? "—" : formatPrice(subtotal, currency)}
+                  {totalsUnavailable ? "—" : formatPrice(subtotal, currency)}
                 </span>
               </div>
               <div className="flex justify-between text-sm">
@@ -204,18 +215,24 @@ export function CartClient() {
                 <span className="text-on-surface-variant uppercase text-xs tracking-widest">
                   Total
                 </span>
-                <span className="editorial-text text-2xl font-black text-primary">
-                  {isLoading ? "—" : formatPrice(subtotal, currency)}
+                <span className="editorial-text text-2xl font-black text-on-surface-primary">
+                  {totalsUnavailable ? "—" : formatPrice(subtotal, currency)}
                 </span>
               </div>
             </div>
 
             <div className="space-y-4">
-              <Link href="/checkout">
-                <Button variant="primary" fullWidth className="py-4 text-base">
+              {hasError ? (
+                <Button variant="primary" fullWidth disabled className="py-4 text-base">
                   Proceed to Checkout
                 </Button>
-              </Link>
+              ) : (
+                <Link href="/checkout">
+                  <Button variant="primary" fullWidth className="py-4 text-base">
+                    Proceed to Checkout
+                  </Button>
+                </Link>
+              )}
             </div>
 
             <div className="mt-12 flex justify-between opacity-30 grayscale contrast-150">
