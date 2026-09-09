@@ -9,14 +9,26 @@ import { useCart } from "@/context/CartContext";
 import { useCartProducts } from "@/hooks/useCartProducts";
 import { formatPrice } from "@/lib/formatPrice";
 import { getSafeImageUrl } from "@/lib/getSafeImageUrl";
+import { isSoldOut } from "@/lib/isSoldOut";
 
 export function CartClient() {
   const { cartItems, removeItem, updateQuantity } = useCart();
   const { products, isLoading, hasError, retry } = useCartProducts();
 
+  // `useCartProducts` re-reads the catalog on every mount, so a piece that sold
+  // out after it was added shows up here as current data. Checkout cannot be
+  // allowed to carry it, and it must not count toward the total either.
+  const soldOutIds = new Set(
+    products.filter(isSoldOut).map((product) => product.id),
+  );
+  const hasUnavailable = cartItems.some((item) =>
+    soldOutIds.has(item.productId),
+  );
+
   const subtotal = isLoading
     ? 0
     : cartItems.reduce((sum, item) => {
+        if (soldOutIds.has(item.productId)) return sum;
         const product = products.find((entry) => entry.id === item.productId);
         return sum + (product?.price ?? 0) * item.quantity;
       }, 0);
@@ -70,12 +82,21 @@ export function CartClient() {
                 );
                 if (!product) return null;
 
+                const itemSoldOut = isSoldOut(product);
+
                 return (
                   <article
                     key={`${item.productId}-${item.size}-${item.color}`}
                     className="group flex flex-col md:flex-row gap-6 p-6 bg-surface-container-low hover:bg-surface-container transition-colors"
                   >
-                    <div className="w-full md:w-40 aspect-[4/5] bg-surface-container-highest flex-shrink-0 overflow-hidden relative">
+                    <div
+                      className={[
+                        "w-full md:w-40 aspect-[4/5] bg-surface-container-highest flex-shrink-0 overflow-hidden relative",
+                        itemSoldOut ? "opacity-40" : "",
+                      ]
+                        .filter(Boolean)
+                        .join(" ")}
+                    >
                       {getSafeImageUrl(product.images) ? (
                         <Image
                           src={getSafeImageUrl(product.images)!}
@@ -94,7 +115,11 @@ export function CartClient() {
                             <span className="font-display font-black tracking-tighter text-3xl">
                               {product.name}
                             </span>
-                            {product.badge === "Limited" ? (
+                            {itemSoldOut ? (
+                              <span className="bg-error-container text-on-error-container text-[10px] font-black px-2 py-0.5 editorial-text border border-error/30 ml-2">
+                                NO LONGER AVAILABLE
+                              </span>
+                            ) : product.badge === "Limited" ? (
                               <span className="bg-primary-container text-on-surface-primary text-[10px] font-black px-2 py-0.5 editorial-text border border-primary/20 ml-2">
                                 LIMITED
                               </span>
@@ -106,7 +131,14 @@ export function CartClient() {
                           </p>
                         </div>
 
-                        <span className="editorial-text text-xl font-bold">
+                        <span
+                          className={[
+                            "editorial-text text-xl font-bold",
+                            itemSoldOut ? "opacity-40 line-through" : "",
+                          ]
+                            .filter(Boolean)
+                            .join(" ")}
+                        >
                           {formatPrice(
                             product.price * item.quantity,
                             product.currency,
@@ -132,6 +164,7 @@ export function CartClient() {
                             <div className="flex items-center gap-4">
                               <button
                                 type="button"
+                                disabled={itemSoldOut}
                                 onClick={() =>
                                   updateQuantity(
                                     item.productId,
@@ -140,17 +173,25 @@ export function CartClient() {
                                     item.quantity - 1,
                                   )
                                 }
-                                className="hover:text-on-surface-primary transition-colors"
+                                className="hover:text-on-surface-primary transition-colors disabled:opacity-40 disabled:cursor-not-allowed disabled:hover:text-on-surface"
                               >
                                 <span className="material-symbols-outlined text-sm">
                                   remove
                                 </span>
                               </button>
-                              <span className="editorial-text text-lg font-bold">
+                              <span
+                                className={[
+                                  "editorial-text text-lg font-bold",
+                                  itemSoldOut ? "opacity-40" : "",
+                                ]
+                                  .filter(Boolean)
+                                  .join(" ")}
+                              >
                                 {item.quantity}
                               </span>
                               <button
                                 type="button"
+                                disabled={itemSoldOut}
                                 onClick={() =>
                                   updateQuantity(
                                     item.productId,
@@ -159,7 +200,7 @@ export function CartClient() {
                                     item.quantity + 1,
                                   )
                                 }
-                                className="hover:text-on-surface-primary transition-colors"
+                                className="hover:text-on-surface-primary transition-colors disabled:opacity-40 disabled:cursor-not-allowed disabled:hover:text-on-surface"
                               >
                                 <span className="material-symbols-outlined text-sm">
                                   add
@@ -222,7 +263,7 @@ export function CartClient() {
             </div>
 
             <div className="space-y-4">
-              {hasError ? (
+              {hasError || hasUnavailable ? (
                 <Button variant="primary" fullWidth disabled className="py-4 text-base">
                   Proceed to Checkout
                 </Button>
@@ -233,6 +274,12 @@ export function CartClient() {
                   </Button>
                 </Link>
               )}
+              {hasUnavailable ? (
+                <p className="font-body text-xs leading-relaxed text-error">
+                  One or more pieces in your bag have sold out. Remove them to
+                  continue to checkout.
+                </p>
+              ) : null}
             </div>
 
             <div className="mt-12 flex justify-between opacity-30 grayscale contrast-150">

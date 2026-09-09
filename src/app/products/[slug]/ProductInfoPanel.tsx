@@ -4,6 +4,7 @@ import Link from "next/link";
 import { useState } from "react";
 import { useCart } from "@/context/CartContext";
 import { formatPrice } from "@/lib/formatPrice";
+import { isSoldOut } from "@/lib/isSoldOut";
 import type { Product } from "@/types/product";
 import { Button } from "@/components/ui/Button";
 import { Dialog } from "@/components/ui/Dialog";
@@ -18,6 +19,10 @@ export function ProductInfoPanel({ product }: { product: Product }) {
   const sizeChart = getSizeChart(product.category);
   const fitValue = product.specs.Fit;
   const fitNote = fitValue ? fitNotes[fitValue] : undefined;
+
+  // The card grid still links here for a sold-out piece, so the page stays
+  // browsable and the block lives on the controls instead of the link.
+  const soldOut = isSoldOut(product);
 
   // Matched on the same identity the reducer uses, so this check and ADD_ITEM
   // can never disagree about what counts as the same line. Gated on `hydrated`
@@ -35,7 +40,7 @@ export function ProductInfoPanel({ product }: { product: Product }) {
   function handleAddToCart() {
     // Adding again would bump the existing line's quantity rather than being
     // rejected, so guard here too and not only via the disabled attribute.
-    if (!selectedSize || isInBag) return;
+    if (soldOut || !selectedSize || isInBag) return;
 
     addItem({
       productId: product.id,
@@ -87,13 +92,16 @@ export function ProductInfoPanel({ product }: { product: Product }) {
               <button
                 key={size}
                 type="button"
+                disabled={soldOut}
                 onClick={() => setSelectedSize(size)}
                 className={[
                   "h-16 flex items-center justify-center font-headline font-bold transition-colors " +
                     "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent focus-visible:ring-offset-2 focus-visible:ring-offset-background",
-                  isSelected
-                    ? "border-2 border-primary bg-primary/10 text-on-surface-primary"
-                    : "border border-outline-variant/30 hover:border-primary hover:bg-on-surface hover:text-surface",
+                  soldOut
+                    ? "border border-outline-variant/30 opacity-40 cursor-not-allowed"
+                    : isSelected
+                      ? "border-2 border-primary bg-primary/10 text-on-surface-primary"
+                      : "border border-outline-variant/30 hover:border-primary hover:bg-on-surface hover:text-surface",
                 ].join(" ")}
               >
                 {size}
@@ -108,11 +116,13 @@ export function ProductInfoPanel({ product }: { product: Product }) {
           type="button"
           variant="primary"
           fullWidth
-          disabled={!selectedSize || isInBag}
+          disabled={soldOut || !selectedSize || isInBag}
           className="h-24 text-2xl"
           onClick={handleAddToCart}
         >
-          {isInBag ? (
+          {soldOut ? (
+            "SOLD OUT"
+          ) : isInBag ? (
             <span className="inline-flex items-center gap-2">
               <span className="material-symbols-outlined text-base">check</span>
               IN BAG
@@ -121,6 +131,11 @@ export function ProductInfoPanel({ product }: { product: Product }) {
             "ADD TO BAG"
           )}
         </Button>
+        {soldOut ? (
+          <p className="mt-6 text-center font-body text-sm leading-relaxed text-on-surface-variant">
+            This piece has sold out and is no longer available to order.
+          </p>
+        ) : null}
         {isInBag ? (
           <div className="mt-6 text-center">
             <Link

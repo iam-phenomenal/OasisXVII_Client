@@ -1,6 +1,7 @@
 "use client";
 
 import Image from "next/image";
+import Link from "next/link";
 import { useEffect, useId, useMemo, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
 import { Navbar } from "@/components/layout/Navbar";
@@ -10,6 +11,7 @@ import { useCartProducts } from "@/hooks/useCartProducts";
 import { createOrder, type CreateOrderPayload } from "@/lib/api/orders";
 import { formatPrice } from "@/lib/formatPrice";
 import { getSafeImageUrl } from "@/lib/getSafeImageUrl";
+import { isSoldOut } from "@/lib/isSoldOut";
 import { Country, State } from "country-state-city";
 
 interface CheckoutClientProps {
@@ -89,12 +91,23 @@ export function CheckoutClient({
     }
   }, [hydrated, cartItems, router]);
 
+  // Checked again here rather than trusting the cart's gate: /checkout is
+  // reachable directly, and a piece can sell out between the two pages.
+  const soldOutIds = useMemo(
+    () => new Set(products.filter(isSoldOut).map((product) => product.id)),
+    [products],
+  );
+  const hasUnavailable = cartItems.some((item) =>
+    soldOutIds.has(item.productId),
+  );
+
   const subtotal = useMemo(() => {
     return cartItems.reduce((sum, item) => {
+      if (soldOutIds.has(item.productId)) return sum;
       const product = products.find((entry) => entry.id === item.productId);
       return sum + (product?.price ?? 0) * item.quantity;
     }, 0);
-  }, [cartItems, products]);
+  }, [cartItems, products, soldOutIds]);
 
   const currency =
     cartItems.length > 0
@@ -191,6 +204,15 @@ export function CheckoutClient({
 
   async function handleCompletePurchase() {
     setOrderError("");
+
+    // Guarded before validation so a sold-out bag reports the blocking problem
+    // rather than sending the shopper through the form first.
+    if (hasUnavailable) {
+      setOrderError(
+        "One or more pieces in your bag have sold out. Return to your bag to remove them.",
+      );
+      return;
+    }
 
     if (!validate()) return;
 
@@ -405,10 +427,17 @@ export function CheckoutClient({
                     );
                     if (!product) return null;
 
+                    const itemSoldOut = soldOutIds.has(item.productId);
+
                     return (
                       <article
                         key={`${item.productId}-${item.size}-${item.color}`}
-                        className="flex gap-6 items-start"
+                        className={[
+                          "flex gap-6 items-start",
+                          itemSoldOut ? "opacity-40" : "",
+                        ]
+                          .filter(Boolean)
+                          .join(" ")}
                       >
                         <div className="relative w-28 aspect-[3/4] bg-surface-container-high overflow-hidden border border-outline">
                           {getSafeImageUrl(product.images) ? (
@@ -432,7 +461,19 @@ export function CheckoutClient({
                           <p className="text-[10px] text-on-surface-variant font-bold uppercase tracking-widest">
                             {item.color} / {item.size}
                           </p>
-                          <p className="text-base font-headline font-bold mt-4">
+                          {itemSoldOut ? (
+                            <p className="text-[10px] text-error font-bold uppercase tracking-widest mt-2">
+                              No longer available
+                            </p>
+                          ) : null}
+                          <p
+                            className={[
+                              "text-base font-headline font-bold mt-4",
+                              itemSoldOut ? "line-through" : "",
+                            ]
+                              .filter(Boolean)
+                              .join(" ")}
+                          >
                             {formatPrice(
                               product.price * item.quantity,
                               product.currency,
@@ -471,7 +512,9 @@ export function CheckoutClient({
               <button
                 type="button"
                 onClick={handleCompletePurchase}
-                disabled={isSubmitting || isLoading || hasError}
+                disabled={
+                  isSubmitting || isLoading || hasError || hasUnavailable
+                }
                 className="w-full bg-primary py-6 mt-12 text-on-primary font-headline font-black uppercase tracking-[0.3em] text-sm shadow-wine-glow hover:shadow-wine-glow-hover transition-[box-shadow,opacity] duration-300 relative overflow-hidden group disabled:opacity-60 disabled:cursor-not-allowed"
               >
                 <div className="absolute inset-0 bg-white/10 translate-y-full pointer-fine:group-hover:translate-y-0 transition-transform duration-300" />
@@ -479,6 +522,18 @@ export function CheckoutClient({
                   {isSubmitting ? "Redirecting to Paystack..." : "Pay with Paystack"}
                 </span>
               </button>
+              {hasUnavailable ? (
+                <p className="font-body text-xs leading-relaxed text-error mt-4">
+                  One or more pieces in your bag have sold out.{" "}
+                  <Link
+                    href="/cart"
+                    className="underline underline-offset-4 hover:text-on-surface"
+                  >
+                    Return to your bag
+                  </Link>{" "}
+                  to remove them.
+                </p>
+              ) : null}
               <p
                 role="alert"
                 aria-live="polite"

@@ -2,6 +2,7 @@ import Image from "next/image";
 import Link from "next/link";
 import { formatPrice } from "@/lib/formatPrice";
 import { getSafeImageUrl } from "@/lib/getSafeImageUrl";
+import { isSoldOut } from "@/lib/isSoldOut";
 import type { Product } from "@/types/product";
 import { VintageTag } from "@/components/ui/VintageTag";
 
@@ -11,29 +12,29 @@ interface ProductCardProps {
 }
 
 export function ProductCard({ product, priority = false }: ProductCardProps) {
-  const isSoldOut = product.badge === "Sold Out";
+  const soldOut = isSoldOut(product);
 
   const articleClasses = [
     "group cursor-pointer",
-    isSoldOut ? "" : "product-card-hover",
+    soldOut ? "" : "product-card-hover",
   ]
     .filter(Boolean)
     .join(" ");
 
   const imageClasses = [
     "object-cover object-[center_20%] transition-transform duration-700",
-    isSoldOut ? "opacity-40" : "pointer-fine:group-hover:scale-105",
+    soldOut ? "opacity-40" : "pointer-fine:group-hover:scale-105",
   ]
     .filter(Boolean)
     .join(" ");
 
-  const infoClasses = ["flex flex-col gap-1", isSoldOut ? "opacity-40" : ""]
+  const infoClasses = ["flex flex-col gap-1", soldOut ? "opacity-40" : ""]
     .filter(Boolean)
     .join(" ");
 
   const titleClasses = [
     "font-headline font-black uppercase tracking-tight text-xl transition-colors",
-    isSoldOut ? "" : "group-hover:text-on-surface-primary",
+    soldOut ? "" : "group-hover:text-on-surface-primary",
   ]
     .filter(Boolean)
     .join(" ");
@@ -42,7 +43,7 @@ export function ProductCard({ product, priority = false }: ProductCardProps) {
     <article className={articleClasses}>
       <Link
         href={`/products/${product.slug}`}
-        aria-label={`View ${product.name}`}
+        aria-label={`View ${product.name}${soldOut ? ", sold out" : ""}`}
       >
         <div className="aspect-[4/5] overflow-hidden bg-surface-container mb-6 relative">
           {getSafeImageUrl(product.images) ? (
@@ -67,7 +68,7 @@ export function ProductCard({ product, priority = false }: ProductCardProps) {
             </div>
           ) : null}
 
-          {isSoldOut ? (
+          {soldOut ? (
             <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-full text-center">
               <span className="bg-on-surface/10 backdrop-blur-md text-on-surface text-[12px] font-headline font-black px-6 py-2 uppercase tracking-[0.3em] border border-on-surface/20">
                 Sold Out
