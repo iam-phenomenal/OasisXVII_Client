@@ -1,5 +1,6 @@
-import { NextRequest, NextResponse } from "next/server";
+import { NextRequest } from "next/server";
 import { ApiError, apiFetch } from "@/lib/api/client";
+import { jsonNoStore } from "@/lib/jsonNoStore";
 import type { OrderConfirmation } from "@/lib/api/orders";
 
 export const dynamic = "force-dynamic";
@@ -10,10 +11,7 @@ export async function POST(request: NextRequest) {
   try {
     payload = await request.json();
   } catch {
-    return NextResponse.json(
-      { error: "Invalid request body." },
-      { status: 400 },
-    );
+    return jsonNoStore({ error: "Invalid request body." }, { status: 400 });
   }
 
   try {
@@ -23,13 +21,10 @@ export async function POST(request: NextRequest) {
       cache: "no-store",
     });
 
-    return NextResponse.json(order, { status: 201 });
+    return jsonNoStore(order, { status: 201 });
   } catch (error) {
     if (error instanceof ApiError) {
-      return NextResponse.json(
-        { error: error.message },
-        { status: error.status },
-      );
+      return jsonNoStore({ error: error.message }, { status: error.status });
     }
 
     throw error;

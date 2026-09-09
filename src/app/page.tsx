@@ -14,7 +14,10 @@ import {
   getSettings,
 } from "@/lib/api/settings";
 
-export const revalidate = 300;
+// This route's revalidate window is derived from the data it reads
+// (`CATALOG_REVALIDATE_SECONDS` in `src/lib/api/products.ts`, and the settings
+// fetch). Do not add `export const revalidate` here — a segment window stacks
+// on top of the fetch window instead of capping it.
 
 export const metadata: Metadata = {
   title: "Home | OasisXVII",
@@ -26,14 +29,13 @@ export default async function Home() {
     getSettings(),
   ]);
 
-  const rawHeroImages =
-    (settings?.heroImages as string[] | null) ?? DEFAULT_HERO_IMAGES;
+  const rawHeroImages = settings.heroImages ?? DEFAULT_HERO_IMAGES;
   const validHeroImages = rawHeroImages.filter(
     (src): src is string => typeof src === "string" && src.length > 0,
   );
   const heroImages = validHeroImages.length > 0 ? validHeroImages : DEFAULT_HERO_IMAGES;
-  const heroHeadline = settings?.heroHeadline ?? DEFAULT_HERO_HEADLINE;
-  const heroSubheading = settings?.heroSubheading ?? DEFAULT_HERO_SUBHEADING;
+  const heroHeadline = settings.heroHeadline ?? DEFAULT_HERO_HEADLINE;
+  const heroSubheading = settings.heroSubheading ?? DEFAULT_HERO_SUBHEADING;
 
   return (
     <>

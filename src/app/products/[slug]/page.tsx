@@ -12,7 +12,10 @@ import {
   getActiveProductsByIds,
 } from "@/lib/api/products";
 
-export const revalidate = 300;
+// This route's revalidate window is derived from the product fetches it reads
+// (`CATALOG_REVALIDATE_SECONDS` in `src/lib/api/products.ts`). Do not add
+// `export const revalidate` here — a segment window stacks on top of the fetch
+// window instead of capping it.
 
 export async function generateStaticParams() {
   const products = await getActiveProducts();

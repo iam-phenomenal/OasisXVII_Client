@@ -36,6 +36,10 @@ const nextConfig: NextConfig = {
     return [{ source: "/(.*)", headers: securityHeaders }];
   },
   images: {
+    // Product photography is immutable per URL: a changed product yields a
+    // changed remote URL, which is a cache miss by construction. The 4h build
+    // default forced a conditional request a day for bytes that never move.
+    minimumCacheTTL: 2592000, // 30 days
     remotePatterns: [
       {
         protocol: "https",
