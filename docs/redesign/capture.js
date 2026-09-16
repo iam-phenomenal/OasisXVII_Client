@@ -34,6 +34,15 @@ const ROUTES = [
           const r = await page.goto(BASE + route, { waitUntil: 'networkidle', timeout: 60000 });
           status = r ? r.status() : 'null';
           if (status === 500 && attempt < 4) { await page.waitForTimeout(1500); continue; }
+          // HeroSlideshow rotates every 4s, so the hero image is whatever
+          // happens to be showing when the shutter fires — a 10-15% pixel diff
+          // between two runs of identical code. Pin slide 0. `!important` in a
+          // stylesheet outranks the component's inline opacity/z-index.
+          await page.addStyleTag({ content: `
+            .absolute.inset-0.z-0 > img { opacity: 0 !important; z-index: 0 !important; }
+            .absolute.inset-0.z-0 > img:first-of-type { opacity: 1 !important; z-index: 2 !important; }
+          ` });
+
           await page.waitForTimeout(600);
           // Trigger every IntersectionObserver-driven .animate-reveal on the page.
           // fullPage screenshots do not scroll, so without this everything below
@@ -49,11 +58,25 @@ const ROUTES = [
             window.scrollTo(0, 0);
             await new Promise(r => setTimeout(r, 400));
           });
+          // Images occasionally fail from the CDN. A broken image is a
+          // several-percent pixel diff that looks exactly like real visual
+          // drift, so treat it as a failed attempt and retry rather than
+          // recording it.
+          const broken = await page.evaluate(() =>
+            [...document.images].filter(i => !i.complete || i.naturalWidth === 0).length);
+          if (broken && attempt < 4) {
+            status = `${status} [${broken} broken images, retrying]`;
+            console.log(`${String(w).padEnd(5)} ${name.padEnd(12)} ${status}`);
+            await page.waitForTimeout(1500);
+            continue;
+          }
+
           const hidden = await page.evaluate(() =>
             [...document.querySelectorAll('.animate-reveal')].filter(
               el => getComputedStyle(el).opacity !== '1').length);
           await page.screenshot({ path: path.join(OUT, `${name}-${w}.png`), fullPage: true });
           if (hidden) status = status + ` [${hidden} still hidden]`;
+          if (broken) status = status + ` [${broken} BROKEN IMAGES]`;
           if (attempt > 1) status = status + ` (retry x${attempt})`;
           break;
         } catch (e) {
