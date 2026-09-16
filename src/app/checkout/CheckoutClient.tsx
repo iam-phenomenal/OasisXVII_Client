@@ -8,6 +8,7 @@ import { Navbar } from "@/components/layout/Navbar";
 import { Footer } from "@/components/layout/Footer";
 import { useCart } from "@/context/CartContext";
 import { useCartProducts } from "@/hooks/useCartProducts";
+import { isValidEmail } from "@/lib/email";
 import { createOrder, type CreateOrderPayload } from "@/lib/api/orders";
 import { formatPrice } from "@/lib/formatPrice";
 import { getSafeImageUrl } from "@/lib/getSafeImageUrl";
@@ -155,12 +156,10 @@ export function CheckoutClient({
     key: K,
     value: string,
   ): string {
-    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-
     switch (key) {
       case "email":
         if (value.trim() === "") return "Email address is required";
-        if (!emailRegex.test(value.trim())) {
+        if (!isValidEmail(value)) {
           return "Enter a valid email address";
         }
         return "";
