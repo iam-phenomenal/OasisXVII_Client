@@ -5,7 +5,9 @@ import typescript from "eslint-config-next/typescript";
 // rather than bridged through @eslint/eslintrc's FlatCompat.
 const eslintConfig = [
   {
-    ignores: [".next/**", "next-env.d.ts"],
+    // docs/redesign/capture.js is a standalone Node screenshot harness, not
+    // app source — it is CommonJS and runs outside the bundler.
+    ignores: [".next/**", "next-env.d.ts", "docs/**"],
   },
   ...coreWebVitals,
   ...typescript,

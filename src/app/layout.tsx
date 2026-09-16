@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import { Bodoni_Moda, Epilogue, Space_Grotesk, Inter } from "next/font/google";
 import "./globals.css";
 import { CartProvider } from "@/context/CartContext";
+import { SmoothScroll } from "@/components/layout/SmoothScroll";
 
 const bodoniModa = Bodoni_Moda({
   subsets: ["latin"],
@@ -56,6 +57,7 @@ export default function RootLayout({
         />
       </head>
       <body className="bg-background text-on-surface font-body antialiased selection:bg-primary selection:text-on-primary">
+        <SmoothScroll />
         <CartProvider>{children}</CartProvider>
       </body>
     </html>
