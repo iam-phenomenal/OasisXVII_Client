@@ -39,7 +39,7 @@ export function PolicyTableOfContents({
 
   return (
     <nav aria-label="On this page" className="sticky top-32">
-      <h2 className="font-headline font-black text-[10px] tracking-[0.4em] uppercase text-on-surface-primary">
+      <h2 className="font-headline font-black text-label tracking-label-xl uppercase text-on-surface-primary">
         On This Page
       </h2>
       <ul className="mt-4 space-y-2 border-l border-outline-variant">
@@ -51,7 +51,7 @@ export function PolicyTableOfContents({
               <a
                 href={`#${section.id}`}
                 aria-current={isActive ? "true" : undefined}
-                className={`block -ml-px border-l pl-4 py-1 text-[11px] font-headline font-bold tracking-widest uppercase transition-colors ${
+                className={`block -ml-px border-l pl-4 py-1 text-label-lg font-headline font-bold tracking-widest uppercase transition-colors ${
                   isActive
                     ? "border-primary text-on-surface"
                     : "border-transparent text-on-surface-variant hover:text-on-surface"

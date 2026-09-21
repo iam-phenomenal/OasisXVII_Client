@@ -125,7 +125,7 @@ export function Dialog({ open, onClose, title, children }: DialogProps) {
           <div className="flex items-start justify-between gap-6 px-8 pt-8 pb-6">
             <h2
               id={titleId}
-              className="font-headline font-black uppercase text-xs tracking-[0.3em] text-accent"
+              className="font-headline font-black uppercase text-xs tracking-label-lg text-accent"
             >
               {title}
             </h2>

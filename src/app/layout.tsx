@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import { Bodoni_Moda, Epilogue, Space_Grotesk, Inter } from "next/font/google";
 import "./globals.css";
 import { CartProvider } from "@/context/CartContext";
+import { SmoothScroll } from "@/components/layout/SmoothScroll";
 
 const bodoniModa = Bodoni_Moda({
   subsets: ["latin"],
@@ -32,8 +33,25 @@ const inter = Inter({
 });
 
 export const metadata: Metadata = {
-  title: "OasisXVII",
+  metadataBase: new URL("https://oasisxvii.xyz"),
+  title: {
+    default: "OasisXVII",
+    template: "%s | OasisXVII",
+  },
   description: "Built for the void.",
+  openGraph: {
+    type: "website",
+    siteName: "OasisXVII",
+    title: "OasisXVII",
+    description: "Built for the void.",
+    url: "/",
+    locale: "en_US",
+  },
+  twitter: {
+    card: "summary_large_image",
+    title: "OasisXVII",
+    description: "Built for the void.",
+  },
 };
 
 export default function RootLayout({
@@ -56,6 +74,7 @@ export default function RootLayout({
         />
       </head>
       <body className="bg-background text-on-surface font-body antialiased selection:bg-primary selection:text-on-primary">
+        <SmoothScroll />
         <CartProvider>{children}</CartProvider>
       </body>
     </html>

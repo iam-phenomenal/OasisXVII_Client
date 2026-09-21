@@ -1,5 +1,6 @@
 import Image from "next/image";
 import Link from "next/link";
+import { SocialRow } from "./SocialRow";
 
 const directoryLinks = [
   { href: "/", label: "Home" },
@@ -14,75 +15,83 @@ const legalLinks = [
   { href: "/shipping", label: "Shipping Policy" },
 ];
 
+const columnHeadingClasses =
+  "font-headline font-black text-label-lg tracking-label-xl uppercase text-on-surface-primary";
+
+const linkClasses =
+  "text-on-surface-variant hover:text-on-surface transition-colors text-xs font-headline font-bold tracking-widest uppercase";
+
+const fineprintClasses =
+  "text-label-sm tracking-label-2xl uppercase font-headline font-black text-on-surface-variant/40";
+
+function LinkColumn({
+  heading,
+  links,
+}: {
+  heading: string;
+  links: { href: string; label: string }[];
+}) {
+  return (
+    <div>
+      <h3 className={columnHeadingClasses}>{heading}</h3>
+      <ul className="mt-5 space-y-3">
+        {links.map((link) => (
+          <li key={link.label}>
+            <Link href={link.href} className={linkClasses}>
+              {link.label}
+            </Link>
+          </li>
+        ))}
+      </ul>
+    </div>
+  );
+}
+
 export function Footer() {
   return (
-    <footer className="bg-surface-container border-t border-primary/20 px-6 pt-12">
-      <div className="flex flex-col md:flex-row justify-between gap-12 pb-9">
-        <div className="max-w-xs">
-          <Image
-            src="https://ik.imagekit.io/pxus1osjev/OasisXVII/IMG_6961.PNG"
-            alt="OasisXVII"
-            width={135}
-            height={36}
-            className="h-9 w-auto object-contain"
-          />
+    <footer className="relative overflow-hidden bg-surface-container-lowest border-t border-primary/20 px-6 pt-16 pb-8 md:pt-20">
+      {/* Wine glow bleeding in from the right, per the DESIGN.md depth rule:
+          tinted light rather than grey shadow. Sits behind the content and
+          takes no pointer events. */}
+      <div
+        aria-hidden="true"
+        className="pointer-events-none absolute -right-40 -top-20 h-[36rem] w-[36rem] rounded-full bg-[radial-gradient(circle,rgba(138,26,73,0.18)_0%,transparent_70%)]"
+      />
 
-          <p className="hidden md:block mt-6 text-[9px] tracking-[0.5em] uppercase font-headline font-black text-on-surface-variant/40">
-            © 2026 OasisXVII CORP
-          </p>
+      <div className="relative mx-auto max-w-7xl">
+        <div className="grid grid-cols-1 gap-12 md:grid-cols-2 lg:grid-cols-12 lg:gap-8">
+          <div className="lg:col-span-5">
+            <Image
+              src="/oasisxvii-mark.png"
+              alt="OasisXVII"
+              // The asset is a square 256x256 mark, not a wordmark — declaring
+              // it square keeps Next from reserving a wrong-ratio box.
+              width={48}
+              height={48}
+              className="h-12 w-12 object-contain"
+            />
+
+            <p className="mt-7 max-w-xs font-body text-sm leading-relaxed text-on-surface-variant">
+              Objects built for quiet extremes — engineered in small runs,
+              priced for those who already know why.
+            </p>
+
+            <div className="mt-8">
+              <SocialRow />
+            </div>
+          </div>
+
+          <div className="grid grid-cols-2 gap-8 lg:col-span-4 lg:col-start-9 lg:gap-6">
+            <LinkColumn heading="Directory" links={directoryLinks} />
+            <LinkColumn heading="Legal" links={legalLinks} />
+          </div>
         </div>
 
-        <div className="flex flex-col justify-between gap-6">
-          <div className="grid grid-cols-2 gap-16">
-            <div>
-              <h3 className="font-headline font-black text-[11px] tracking-[0.4em] uppercase text-on-surface-primary">
-                Directory
-              </h3>
-              <ul className="mt-4 space-y-2">
-                {directoryLinks.map((link) => (
-                  <li key={link.label}>
-                    <Link
-                      href={link.href}
-                      className="text-on-surface-variant hover:text-on-surface transition-colors text-xs font-headline font-bold tracking-widest uppercase"
-                    >
-                      {link.label}
-                    </Link>
-                  </li>
-                ))}
-              </ul>
-            </div>
-
-            <div>
-              <h3 className="font-headline font-black text-[11px] tracking-[0.4em] uppercase text-on-surface-primary">
-                Legal
-              </h3>
-              <ul className="mt-4 space-y-2">
-                {legalLinks.map((link) => (
-                  <li key={link.label}>
-                    <Link
-                      href={link.href}
-                      className="text-on-surface-variant hover:text-on-surface transition-colors text-xs font-headline font-bold tracking-widest uppercase"
-                    >
-                      {link.label}
-                    </Link>
-                  </li>
-                ))}
-              </ul>
-            </div>
-          </div>
-
-          <span className="hidden md:block text-[9px] tracking-[0.5em] uppercase font-headline font-black text-on-surface-variant/40">
-            Designed for the modern void - EST. XVII
-          </span>
-
-          <div className="md:hidden flex flex-col gap-1 items-center text-center">
-            <span className="text-[7px] tracking-[0.5em] uppercase font-headline font-black text-on-surface-variant/40">
-              Designed for the modern void - EST. XVII
-            </span>
-            <span className="text-[7px] tracking-[0.5em] uppercase font-headline font-black text-on-surface-variant/40">
-              © 2026 OasisXVII CORP
-            </span>
-          </div>
+        <div className="mt-16 flex flex-col-reverse items-center gap-4 border-t border-outline-variant/40 pt-8 text-center md:mt-20 md:flex-row md:justify-between md:gap-6 md:text-left">
+          <p className={fineprintClasses}>© 2026 OasisXVII Corp</p>
+          <p className={fineprintClasses}>
+            Designed for the modern void · EST. XVII
+          </p>
         </div>
       </div>
     </footer>

@@ -61,7 +61,7 @@ export function ProductInfoPanel({ product }: { product: Product }) {
           {formatPrice(product.price, product.currency)}
         </span>
         {product.badge ? (
-          <span className="px-4 py-1 bg-primary text-on-primary text-[10px] font-black uppercase tracking-widest font-headline">
+          <span className="px-4 py-1 bg-primary text-on-primary text-label font-black uppercase tracking-widest font-headline">
             {product.badge}
           </span>
         ) : null}
@@ -69,7 +69,7 @@ export function ProductInfoPanel({ product }: { product: Product }) {
 
       <div className="mb-16">
         <div className="flex justify-between items-center mb-6">
-          <p className="font-headline font-bold uppercase text-xs tracking-[0.3em] text-on-surface-variant">
+          <p className="font-headline font-bold uppercase text-xs tracking-label-lg text-on-surface-variant">
             SELECT SIZE
           </p>
           {sizeChart ? (
@@ -78,7 +78,7 @@ export function ProductInfoPanel({ product }: { product: Product }) {
               onClick={() => setSizeGuideOpen(true)}
               aria-haspopup="dialog"
               aria-expanded={sizeGuideOpen}
-              className="font-headline font-bold uppercase text-xs tracking-[0.3em] text-on-surface-variant underline underline-offset-4 decoration-outline-variant transition-colors hover:text-on-surface hover:decoration-on-surface-primary focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent focus-visible:ring-offset-2 focus-visible:ring-offset-background"
+              className="font-headline font-bold uppercase text-xs tracking-label-lg text-on-surface-variant underline underline-offset-4 decoration-outline-variant transition-colors hover:text-on-surface hover:decoration-on-surface-primary focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent focus-visible:ring-offset-2 focus-visible:ring-offset-background"
             >
               SIZE GUIDE
             </button>
@@ -140,7 +140,7 @@ export function ProductInfoPanel({ product }: { product: Product }) {
           <div className="mt-6 text-center">
             <Link
               href="/cart"
-              className="font-headline font-bold uppercase text-xs tracking-[0.3em] text-on-surface-variant underline underline-offset-4 decoration-outline-variant transition-colors hover:text-on-surface hover:decoration-on-surface-primary focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent focus-visible:ring-offset-2 focus-visible:ring-offset-background"
+              className="font-headline font-bold uppercase text-xs tracking-label-lg text-on-surface-variant underline underline-offset-4 decoration-outline-variant transition-colors hover:text-on-surface hover:decoration-on-surface-primary focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent focus-visible:ring-offset-2 focus-visible:ring-offset-background"
             >
               VIEW BAG
             </Link>
@@ -153,7 +153,7 @@ export function ProductInfoPanel({ product }: { product: Product }) {
 
       <div className="pt-16 border-t border-outline-variant/20 space-y-12">
         <div>
-          <p className="font-headline font-black uppercase text-xs tracking-[0.3em] mb-6 text-on-surface-primary">
+          <p className="font-headline font-black uppercase text-xs tracking-label-lg mb-6 text-on-surface-primary">
             PRODUCT SPECS
           </p>
           <p className="text-on-surface-variant font-body text-lg leading-relaxed max-w-lg uppercase">
@@ -162,7 +162,7 @@ export function ProductInfoPanel({ product }: { product: Product }) {
         </div>
 
         <div className="p-8 bg-surface-container-low border-l-4 border-primary">
-          <p className="font-headline text-xs uppercase tracking-[0.2em] text-on-surface-variant mb-3">
+          <p className="font-headline text-xs uppercase tracking-label text-on-surface-variant mb-3">
             SHIPPING & RETURNS
           </p>
           <p className="font-body text-sm leading-relaxed text-on-surface-variant">
@@ -188,7 +188,7 @@ export function ProductInfoPanel({ product }: { product: Product }) {
                   <th
                     key={column}
                     scope="col"
-                    className="py-3 pr-4 last:pr-0 font-headline font-bold uppercase text-[10px] tracking-[0.2em] text-on-surface-variant"
+                    className="py-3 pr-4 last:pr-0 font-headline font-bold uppercase text-label tracking-label text-on-surface-variant"
                   >
                     {column}
                   </th>
@@ -238,7 +238,7 @@ export function ProductInfoPanel({ product }: { product: Product }) {
 
           {fitNote ? (
             <div className="mt-8 pt-6 border-t border-outline-variant/20">
-              <p className="font-headline font-bold uppercase text-[10px] tracking-[0.2em] text-accent mb-3">
+              <p className="font-headline font-bold uppercase text-label tracking-label text-accent mb-3">
                 HOW IT FITS
               </p>
               <p className="font-body text-sm leading-relaxed text-on-surface-variant">

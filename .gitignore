@@ -37,3 +37,9 @@ yarn-error.log*
 # typescript
 *.tsbuildinfo
 next-env.d.ts
+
+# playwright cli run artifacts
+/.playwright-cli/
+
+# per-phase verification captures (baseline is committed; these are transient)
+/docs/redesign/shots/

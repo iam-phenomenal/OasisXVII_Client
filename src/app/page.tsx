@@ -14,13 +14,18 @@ import {
   getSettings,
 } from "@/lib/api/settings";
 
-// This route's revalidate window is derived from the data it reads
-// (`CATALOG_REVALIDATE_SECONDS` in `src/lib/api/products.ts`, and the settings
-// fetch). Do not add `export const revalidate` here — a segment window stacks
-// on top of the fetch window instead of capping it.
+// The product fetch is `no-store` (see `src/lib/api/products.ts`), so this page
+// already rendered per request by way of Next's dynamic bailout. Declaring it
+// keeps that visible rather than implied.
+//
+// This does not change how settings are read: `force-dynamic` only forces
+// `no-store` onto fetches that set no cache policy of their own, and
+// `getSettings` sets its own. Hero content still comes from its 300s window and
+// is still purged by the `settings` tag.
+export const dynamic = "force-dynamic";
 
 export const metadata: Metadata = {
-  title: "Home | OasisXVII",
+  title: "Home",
 };
 
 export default async function Home() {
@@ -46,10 +51,10 @@ export default async function Home() {
           <div className="absolute inset-0 bg-gradient-to-t from-background via-background/40 to-transparent" />
 
           <div className="relative z-10 w-full">
-            <h1 className="font-serif text-on-surface text-[10vw] md:text-[9vw] lg:text-[7.5rem] leading-none font-black uppercase tracking-tighter mb-4 drop-shadow-[0_5px_15px_rgba(0,0,0,0.8)]">
+            <h1 className="font-serif text-on-surface text-[10vw] md:text-[9vw] lg:text-[7.5rem] leading-none font-black uppercase tracking-tighter mb-4 drop-shadow-hero">
               {heroHeadline}
             </h1>
-            <h2 className="font-display text-lg md:text-4xl font-bold uppercase tracking-[0.2em] text-accent mb-10">
+            <h2 className="font-display text-lg md:text-4xl font-bold uppercase tracking-label text-accent mb-10">
               {heroSubheading}
             </h2>
 
@@ -79,7 +84,7 @@ export default async function Home() {
               </h2>
               <Link
                 href="/shop"
-                className="font-display text-accent uppercase tracking-[0.2em] text-lg hover:underline underline-offset-8 transition-colors"
+                className="font-display text-accent uppercase tracking-label text-lg hover:underline underline-offset-8 transition-colors"
               >
                 View Archive →
               </Link>

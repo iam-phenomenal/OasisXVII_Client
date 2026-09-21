@@ -30,14 +30,36 @@
   letter-spacing: -0.02em;
 }
 
-/* ── Primary Gradient (deep wine CTA) ─────────────────────── */
-.primary-gradient {
-  background: linear-gradient(135deg, #4a0f27 0%, #5d111f 100%);
+/* ── Lenis Smooth Scroll ───────────────────────────────────── */
+/* Required by lenis. Inlined rather than importing lenis/dist/lenis.css so the
+   rules stay visible to the dead-CSS audit like everything else here.
+   Lenis is not initialized under prefers-reduced-motion, so none of these
+   classes are applied in that case — see SmoothScroll.tsx. */
+html.lenis,
+html.lenis body {
+  height: auto;
 }
 
-/* ── Neon Glow Text ────────────────────────────────────────── */
-.text-glow-accent {
-  text-shadow: 0 0 20px rgba(255, 45, 111, 0.5);
+.lenis:not(.lenis-autoToggle).lenis-stopped {
+  overflow: clip;
+}
+
+.lenis [data-lenis-prevent],
+.lenis [data-lenis-prevent-wheel],
+.lenis [data-lenis-prevent-touch],
+.lenis [data-lenis-prevent-vertical],
+.lenis [data-lenis-prevent-horizontal] {
+  overscroll-behavior: contain;
+}
+
+.lenis.lenis-smooth iframe {
+  pointer-events: none;
+}
+
+.lenis.lenis-autoToggle {
+  transition-property: overflow;
+  transition-duration: 1ms;
+  transition-behavior: allow-discrete;
 }
 
 /* ── Product Card Lift ─────────────────────────────────────── */

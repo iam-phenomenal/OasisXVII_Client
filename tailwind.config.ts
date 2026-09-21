@@ -38,14 +38,11 @@ const config: Config = {
         // Use tonal shifts instead of borders to define depth.
         "surface-container-lowest": "#0E0E13", // deepest void
         background: "#0F0F14",                 // grain overlay base
-        "surface-dim": "#0F0F14",
         surface: "#131318",                    // DESIGN.md "Base Background"
         "surface-container-low": "#1B1B20",    // DESIGN.md explicit token
         "surface-container": "#18181F",
         "surface-container-high": "#22222B",
         "surface-container-highest": "#2D2D38",
-        "surface-variant": "#212129",
-        "surface-bright": "#2C2C36",
 
         // Primary — Deep Wine
         // DESIGN.md authority: #4A0F27
@@ -57,7 +54,6 @@ const config: Config = {
         "on-primary": "#FFFFFF",
         "on-primary-container": "#FFFFFF",
         "primary-hover": "#B21E42",            // DESIGN.md "Hover/Active Wine"
-        "surface-tint": "#4A0F27",
 
         // Secondary — Wine Glow Source
         // DESIGN.md §2: "secondary_container (#8A1A49) — used for Wine Glow blur"
@@ -116,6 +112,27 @@ const config: Config = {
         label:    ["var(--font-headline)", "sans-serif"],
       },
 
+      // ─── Label Type Scale ──────────────────────────────────────────────────
+      // The uppercase micro-labels (eyebrows, chips, footer headings, table of
+      // contents) were 33 x text-[10px] plus one-off [9px] and [11px]. Hoisted
+      // at their shipped values — Phase 2 owns whether these values are right.
+      fontSize: {
+        "label-sm": "0.5625rem", // 9px
+        label: "0.625rem",       // 10px
+        "label-lg": "0.6875rem", // 11px
+      },
+
+      // ─── Label Tracking ────────────────────────────────────────────────────
+      // 23 arbitrary tracking values across 5 distinct steps. Same rule: hoisted
+      // at shipped values, Phase 2 decides the direction's real scale.
+      letterSpacing: {
+        label: "0.2em",
+        "label-md": "0.25em",
+        "label-lg": "0.3em",
+        "label-xl": "0.4em",
+        "label-2xl": "0.5em",
+      },
+
       // ─── Box Shadows ───────────────────────────────────────────────────────
       // DESIGN.md: No grey shadows. All depth = wine-tinted glow.
       boxShadow: {
@@ -124,6 +141,13 @@ const config: Config = {
         "wine-glow-hover": "0 0 50px rgba(178, 30, 66, 0.5)",
         // Ambient: for modals/dropdowns — tinted #4A0F27 at 8% opacity, 40px blur
         "wine-ambient": "0 0 40px rgba(74, 15, 39, 0.08)",
+      },
+
+      // ─── Drop Shadows ──────────────────────────────────────────────────────
+      dropShadow: {
+        // Hero headline legibility over a server-driven photograph. Was inline
+        // on page.tsx as drop-shadow-[0_5px_15px_rgba(0,0,0,0.8)].
+        hero: "0 5px 15px rgba(0, 0, 0, 0.8)",
       },
 
       // ─── Spacing ───────────────────────────────────────────────────────────

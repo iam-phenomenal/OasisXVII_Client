@@ -19,10 +19,10 @@ export function VintageTag({
   const sizeClasses =
     size === "md"
       ? "px-3 py-1.5 tracking-widest"
-      : "px-2 py-0.5 tracking-[0.2em]";
+      : "px-2 py-0.5 tracking-label";
 
   const classes = [
-    "inline-flex items-center text-[10px] font-headline font-black uppercase editorial-text",
+    "inline-flex items-center text-label font-headline font-black uppercase editorial-text",
     variantClasses,
     sizeClasses,
     className,

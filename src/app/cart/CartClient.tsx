@@ -116,11 +116,11 @@ export function CartClient() {
                               {product.name}
                             </span>
                             {itemSoldOut ? (
-                              <span className="bg-error-container text-on-error-container text-[10px] font-black px-2 py-0.5 editorial-text border border-error/30 ml-2">
+                              <span className="bg-error-container text-on-error-container text-label font-black px-2 py-0.5 editorial-text border border-error/30 ml-2">
                                 NO LONGER AVAILABLE
                               </span>
                             ) : product.badge === "Limited" ? (
-                              <span className="bg-primary-container text-on-surface-primary text-[10px] font-black px-2 py-0.5 editorial-text border border-primary/20 ml-2">
+                              <span className="bg-primary-container text-on-surface-primary text-label font-black px-2 py-0.5 editorial-text border border-primary/20 ml-2">
                                 LIMITED
                               </span>
                             ) : null}
@@ -149,7 +149,7 @@ export function CartClient() {
                       <div className="mt-8 md:mt-0 flex justify-between items-end gap-4">
                         <div className="flex gap-8 items-center">
                           <div className="flex flex-col">
-                            <span className="text-[10px] uppercase text-on-surface-variant font-bold mb-1">
+                            <span className="text-label uppercase text-on-surface-variant font-bold mb-1">
                               Size
                             </span>
                             <span className="editorial-text text-lg font-bold">
@@ -158,7 +158,7 @@ export function CartClient() {
                           </div>
 
                           <div className="flex flex-col">
-                            <span className="text-[10px] uppercase text-on-surface-variant font-bold mb-1">
+                            <span className="text-label uppercase text-on-surface-variant font-bold mb-1">
                               Quantity
                             </span>
                             <div className="flex items-center gap-4">

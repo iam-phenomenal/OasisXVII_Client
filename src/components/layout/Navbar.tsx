@@ -29,16 +29,16 @@ export function Navbar({ variant = "default" }: NavbarProps) {
           <div className="flex items-center gap-6">
             <Link href="/" aria-label="Go to home">
               <Image
-                src="https://ik.imagekit.io/pxus1osjev/OasisXVII/IMG_6961.PNG"
+                src="/oasisxvii-mark.png"
                 alt="OasisXVII"
-                width={140}
+                width={32}
                 height={32}
-                className="h-8 w-auto object-contain"
+                className="h-8 w-8 object-contain"
                 priority
               />
             </Link>
 
-            <div className="hidden md:flex items-center gap-3 text-[10px] font-bold tracking-[0.3em] uppercase font-headline">
+            <div className="hidden md:flex items-center gap-3 text-label font-bold tracking-label-lg uppercase font-headline">
               <span className="text-on-surface-primary italic">Information</span>
               <span className="text-on-surface/10 font-normal">&gt;</span>
               <span className="text-on-surface-variant">Shipping</span>
@@ -49,7 +49,7 @@ export function Navbar({ variant = "default" }: NavbarProps) {
 
           <Link
             href="/cart"
-            className="group text-[10px] font-bold uppercase tracking-widest hover:text-on-surface-primary transition-colors font-headline inline-flex items-center gap-1"
+            className="group text-label font-bold uppercase tracking-widest hover:text-on-surface-primary transition-colors font-headline inline-flex items-center gap-1"
           >
             <span className="material-symbols-outlined text-sm transition-transform pointer-fine:group-hover:-translate-x-1">
               arrow_back
@@ -67,11 +67,11 @@ export function Navbar({ variant = "default" }: NavbarProps) {
         <div className="flex items-center gap-8">
           <Link href="/" aria-label="Go to home">
             <Image
-              src="https://ik.imagekit.io/pxus1osjev/OasisXVII/IMG_6961.PNG"
+              src="/oasisxvii-mark.png"
               alt="OasisXVII"
-              width={160}
+              width={40}
               height={40}
-              className="h-8 md:h-10 w-auto object-contain"
+              className="h-8 w-8 md:h-10 md:w-10 object-contain"
               priority
             />
           </Link>
@@ -105,7 +105,7 @@ export function Navbar({ variant = "default" }: NavbarProps) {
           >
             <span className="material-symbols-outlined">shopping_cart</span>
             {cartCount > 0 ? (
-              <span className="absolute -top-1 -right-1 bg-primary text-on-primary text-[10px] font-bold px-1 min-w-[16px] h-4 flex items-center justify-center">
+              <span className="absolute -top-1 -right-1 bg-primary text-on-primary text-label font-bold px-1 min-w-[16px] h-4 flex items-center justify-center">
                 {cartCount}
               </span>
             ) : null}
