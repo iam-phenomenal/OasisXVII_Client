@@ -7,23 +7,19 @@ import { ProductCard } from "@/components/ui/ProductCard";
 import { ImageGallery } from "@/components/ui/ImageGallery";
 import { ProductInfoPanel } from "./ProductInfoPanel";
 import {
-  getActiveProducts,
   getActiveProductBySlug,
   getActiveProductsByIds,
 } from "@/lib/api/products";
 
-// This route's revalidate window is derived from the product fetches it reads
-// (`CATALOG_REVALIDATE_SECONDS` in `src/lib/api/products.ts`). Do not add
-// `export const revalidate` here — a segment window stacks on top of the fetch
-// window instead of capping it.
-
-export async function generateStaticParams() {
-  const products = await getActiveProducts();
-  return products.map((p) => ({ slug: p.slug }));
-}
+// The catalog is read per request — every product fetch this page makes is
+// `no-store` (see `src/lib/api/products.ts`), so there is no cached data to
+// prerender from. Do not add `export const revalidate` or `generateStaticParams`
+// here: either one promises build-time output that the `no-store` reads cannot
+// satisfy, and `next build` fails with DYNAMIC_SERVER_USAGE on this route.
+export const dynamic = "force-dynamic";
 
 export const metadata: Metadata = {
-  title: "Product | OasisXVII",
+  title: "Product",
 };
 
 export default async function ProductPage({
@@ -61,7 +57,7 @@ export default async function ProductPage({
             </h2>
             <Link
               href="/shop"
-              className="text-xs font-bold uppercase tracking-[0.3em] hover:text-on-surface-primary transition-colors"
+              className="text-xs font-bold uppercase tracking-label-lg hover:text-on-surface-primary transition-colors"
             >
               VIEW ALL
             </Link>

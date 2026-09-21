@@ -16,13 +16,13 @@ const legalLinks = [
 ];
 
 const columnHeadingClasses =
-  "font-headline font-black text-[11px] tracking-[0.4em] uppercase text-on-surface-primary";
+  "font-headline font-black text-label-lg tracking-label-xl uppercase text-on-surface-primary";
 
 const linkClasses =
   "text-on-surface-variant hover:text-on-surface transition-colors text-xs font-headline font-bold tracking-widest uppercase";
 
 const fineprintClasses =
-  "text-[9px] tracking-[0.5em] uppercase font-headline font-black text-on-surface-variant/40";
+  "text-label-sm tracking-label-2xl uppercase font-headline font-black text-on-surface-variant/40";
 
 function LinkColumn({
   heading,
@@ -62,7 +62,7 @@ export function Footer() {
         <div className="grid grid-cols-1 gap-12 md:grid-cols-2 lg:grid-cols-12 lg:gap-8">
           <div className="lg:col-span-5">
             <Image
-              src="https://ik.imagekit.io/pxus1osjev/OasisXVII/IMG_6961.PNG"
+              src="/oasisxvii-mark.png"
               alt="OasisXVII"
               // The asset is a square 256x256 mark, not a wordmark — declaring
               // it square keeps Next from reserving a wrong-ratio box.

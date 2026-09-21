@@ -11,7 +11,7 @@ import type { OrderStatus } from "@/lib/api/orders";
 export const dynamic = "force-dynamic";
 
 export const metadata: Metadata = {
-  title: "Order Status | OasisXVII",
+  title: "Order Status",
   robots: { index: false },
 };
 
@@ -75,7 +75,7 @@ export default async function OrderConfirmationPage({
 
               <div className="bg-surface-container border border-outline p-8 text-left mb-10 shadow-wine-glow space-y-6">
                 <div className="flex justify-between items-center">
-                  <span className="text-[10px] font-bold uppercase tracking-widest text-on-surface-variant">
+                  <span className="text-label font-bold uppercase tracking-widest text-on-surface-variant">
                     Order ID
                   </span>
                   <span className="font-headline font-bold text-sm text-on-surface">
@@ -85,7 +85,7 @@ export default async function OrderConfirmationPage({
 
                 {totalDue !== null && (
                   <div className="flex justify-between items-center border-t border-outline pt-6">
-                    <span className="text-[10px] font-bold uppercase tracking-widest text-on-surface-variant">
+                    <span className="text-label font-bold uppercase tracking-widest text-on-surface-variant">
                       Total Paid
                     </span>
                     <span className="font-headline font-black text-2xl text-on-surface-primary">

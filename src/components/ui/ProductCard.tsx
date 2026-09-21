@@ -70,7 +70,7 @@ export function ProductCard({ product, priority = false }: ProductCardProps) {
 
           {soldOut ? (
             <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-full text-center">
-              <span className="bg-on-surface/10 backdrop-blur-md text-on-surface text-[12px] font-headline font-black px-6 py-2 uppercase tracking-[0.3em] border border-on-surface/20">
+              <span className="bg-on-surface/10 backdrop-blur-md text-on-surface text-[12px] font-headline font-black px-6 py-2 uppercase tracking-label-lg border border-on-surface/20">
                 Sold Out
               </span>
             </div>
@@ -84,7 +84,7 @@ export function ProductCard({ product, priority = false }: ProductCardProps) {
               {formatPrice(product.price, product.currency)}
             </span>
           </div>
-          <p className="text-on-surface-variant text-xs font-headline font-medium uppercase tracking-[0.2em]">
+          <p className="text-on-surface-variant text-xs font-headline font-medium uppercase tracking-label">
             {product.tagline}
           </p>
         </div>

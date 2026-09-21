@@ -33,8 +33,25 @@ const inter = Inter({
 });
 
 export const metadata: Metadata = {
-  title: "OasisXVII",
+  metadataBase: new URL("https://oasisxvii.xyz"),
+  title: {
+    default: "OasisXVII",
+    template: "%s | OasisXVII",
+  },
   description: "Built for the void.",
+  openGraph: {
+    type: "website",
+    siteName: "OasisXVII",
+    title: "OasisXVII",
+    description: "Built for the void.",
+    url: "/",
+    locale: "en_US",
+  },
+  twitter: {
+    card: "summary_large_image",
+    title: "OasisXVII",
+    description: "Built for the void.",
+  },
 };
 
 export default function RootLayout({

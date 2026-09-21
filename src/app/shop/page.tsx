@@ -7,13 +7,13 @@ import { ShopResults } from "@/components/ui/ShopResults";
 import { SortDropdown, SortDropdownFallback } from "@/components/ui/SortDropdown";
 import { getActiveProducts } from "@/lib/api/products";
 
-// This route's revalidate window is derived from the product fetch it reads
-// (`CATALOG_REVALIDATE_SECONDS` in `src/lib/api/products.ts`). Do not add
-// `export const revalidate` here — a segment window stacks on top of the fetch
-// window instead of capping it.
+// The product fetch is `no-store` (see `src/lib/api/products.ts`), so this page
+// already rendered per request by way of Next's dynamic bailout. Declaring it
+// keeps that visible rather than implied.
+export const dynamic = "force-dynamic";
 
 export const metadata: Metadata = {
-  title: "Shop | OasisXVII",
+  title: "Shop",
 };
 
 export default async function ShopPage() {
@@ -38,9 +38,10 @@ export default async function ShopPage() {
           </div>
         </header>
 
-        {/* The fallbacks are what gets prerendered, so they render the default
-            view: the static HTML carries a real first page of products, and the
-            client only takes over when the search params say otherwise. */}
+        {/* The fallback renders the default view — featured sort, first page —
+            from products already fetched on the server, so the first paint
+            carries a real grid. `ShopCatalog` reads the search params and takes
+            over only when they ask for something other than the default. */}
         <Suspense
           fallback={<ShopResults products={products} sort="featured" page={1} />}
         >

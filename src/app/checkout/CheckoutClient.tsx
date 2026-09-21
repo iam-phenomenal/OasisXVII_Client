@@ -299,7 +299,7 @@ export function CheckoutClient({
                       <span className="w-2 h-2 bg-primary" />
                     ) : null}
                   </span>
-                  <span className="text-[10px] font-bold uppercase tracking-widest text-on-surface-variant">
+                  <span className="text-label font-bold uppercase tracking-widest text-on-surface-variant">
                     Email me with news and exclusive drops
                   </span>
                 </label>
@@ -403,18 +403,18 @@ export function CheckoutClient({
 
               <div className="space-y-8 mb-12">
                 {isLoading ? (
-                  <p className="text-on-surface-variant font-headline text-[10px] uppercase tracking-widest animate-pulse">
+                  <p className="text-on-surface-variant font-headline text-label uppercase tracking-widest animate-pulse">
                     Loading items...
                   </p>
                 ) : hasError ? (
                   <div>
-                    <p className="text-on-surface-variant font-headline text-[10px] uppercase tracking-widest mb-4">
+                    <p className="text-on-surface-variant font-headline text-label uppercase tracking-widest mb-4">
                       Couldn&apos;t load your bag
                     </p>
                     <button
                       type="button"
                       onClick={retry}
-                      className="font-headline text-[10px] font-bold uppercase tracking-widest text-on-surface-primary underline underline-offset-4 transition-colors hover:text-on-surface focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent focus-visible:ring-offset-2 focus-visible:ring-offset-background"
+                      className="font-headline text-label font-bold uppercase tracking-widest text-on-surface-primary underline underline-offset-4 transition-colors hover:text-on-surface focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent focus-visible:ring-offset-2 focus-visible:ring-offset-background"
                     >
                       Try again
                     </button>
@@ -448,7 +448,7 @@ export function CheckoutClient({
                               sizes="7rem"
                             />
                           ) : null}
-                          <span className="absolute top-2 right-2 bg-primary text-on-primary font-headline font-black text-[10px] px-2 py-1">
+                          <span className="absolute top-2 right-2 bg-primary text-on-primary font-headline font-black text-label px-2 py-1">
                             {item.quantity}
                           </span>
                         </div>
@@ -457,11 +457,11 @@ export function CheckoutClient({
                           <h3 className="font-headline font-black uppercase tracking-tight text-base italic">
                             {product.name}
                           </h3>
-                          <p className="text-[10px] text-on-surface-variant font-bold uppercase tracking-widest">
+                          <p className="text-label text-on-surface-variant font-bold uppercase tracking-widest">
                             {item.color} / {item.size}
                           </p>
                           {itemSoldOut ? (
-                            <p className="text-[10px] text-error font-bold uppercase tracking-widest mt-2">
+                            <p className="text-label text-error font-bold uppercase tracking-widest mt-2">
                               No longer available
                             </p>
                           ) : null}
@@ -486,20 +486,20 @@ export function CheckoutClient({
               </div>
 
               <div className="pt-10 border-t border-outline space-y-4">
-                <div className="flex justify-between text-[10px] font-bold uppercase tracking-widest text-on-surface-variant">
+                <div className="flex justify-between text-label font-bold uppercase tracking-widest text-on-surface-variant">
                   <span>Subtotal</span>
                   <span>{totalsUnavailable ? "—" : formatPrice(subtotal, currency)}</span>
                 </div>
-                <div className="flex justify-between text-[10px] font-bold uppercase tracking-widest text-on-surface-variant">
+                <div className="flex justify-between text-label font-bold uppercase tracking-widest text-on-surface-variant">
                   <span>Logistics</span>
                   <span>{totalsUnavailable ? "—" : formatPrice(logisticsFee, currency)}</span>
                 </div>
-                <div className="flex justify-between text-[10px] font-bold uppercase tracking-widest text-on-surface-variant">
+                <div className="flex justify-between text-label font-bold uppercase tracking-widest text-on-surface-variant">
                   <span>Duty &amp; Tax</span>
                   <span>{totalsUnavailable ? "—" : formatPrice(dutyTax, currency)}</span>
                 </div>
                 <div className="flex justify-between items-end">
-                  <span className="text-[10px] font-bold uppercase tracking-widest text-on-surface-variant">
+                  <span className="text-label font-bold uppercase tracking-widest text-on-surface-variant">
                     Total Due
                   </span>
                   <span className="text-2xl font-headline font-black uppercase tracking-tighter text-on-surface-primary underline decoration-2 underline-offset-8">
@@ -514,7 +514,7 @@ export function CheckoutClient({
                 disabled={
                   isSubmitting || isLoading || hasError || hasUnavailable
                 }
-                className="w-full bg-primary py-6 mt-12 text-on-primary font-headline font-black uppercase tracking-[0.3em] text-sm shadow-wine-glow hover:shadow-wine-glow-hover transition-[box-shadow,opacity] duration-300 relative overflow-hidden group disabled:opacity-60 disabled:cursor-not-allowed"
+                className="w-full bg-primary py-6 mt-12 text-on-primary font-headline font-black uppercase tracking-label-lg text-sm shadow-wine-glow hover:shadow-wine-glow-hover transition-[box-shadow,opacity] duration-300 relative overflow-hidden group disabled:opacity-60 disabled:cursor-not-allowed"
               >
                 <div className="absolute inset-0 bg-white/10 translate-y-full pointer-fine:group-hover:translate-y-0 transition-transform duration-300" />
                 <span className="relative z-10">
@@ -536,23 +536,23 @@ export function CheckoutClient({
               <p
                 role="alert"
                 aria-live="polite"
-                className="text-[10px] font-bold uppercase tracking-widest text-error mt-4 empty:mt-0"
+                className="text-label font-bold uppercase tracking-widest text-error mt-4 empty:mt-0"
               >
                 {orderError}
               </p>
 
               <div className="mt-6 border border-outline px-6 py-5 flex items-center gap-3">
-                <span className="text-[9px] font-bold uppercase tracking-widest text-on-surface-variant">
+                <span className="text-label-sm font-bold uppercase tracking-widest text-on-surface-variant">
                   Secured by
                 </span>
-                <span className="text-[11px] font-black uppercase tracking-wider text-on-surface">
+                <span className="text-label-lg font-black uppercase tracking-wider text-on-surface">
                   Paystack
                 </span>
                 <div className="ml-2 flex items-center gap-2">
                   {["Mastercard", "Visa", "Verve"].map((card) => (
                     <span
                       key={card}
-                      className="text-[9px] font-bold uppercase tracking-widest border border-outline px-2 py-1 text-on-surface-variant"
+                      className="text-label-sm font-bold uppercase tracking-widest border border-outline px-2 py-1 text-on-surface-variant"
                     >
                       {card}
                     </span>
@@ -597,7 +597,7 @@ function FloatingSelect({
     <div className="relative group">
       <label
         htmlFor={fieldId}
-        className={`absolute -top-2 left-4 bg-surface px-2 text-[10px] font-bold uppercase tracking-widest transition-colors z-10 ${
+        className={`absolute -top-2 left-4 bg-surface px-2 text-label font-bold uppercase tracking-widest transition-colors z-10 ${
           error
             ? "text-error"
             : "text-on-surface-variant group-focus-within:text-on-surface-primary"
@@ -638,7 +638,7 @@ function FloatingSelect({
       {error && (
         <p
           id={errorId}
-          className="text-[10px] font-bold uppercase tracking-widest text-error mt-2"
+          className="text-label font-bold uppercase tracking-widest text-error mt-2"
         >
           {error}
         </p>
@@ -681,7 +681,7 @@ function FloatingInput({
     <div className="relative group">
       <label
         htmlFor={fieldId}
-        className={`absolute -top-2 left-4 bg-surface px-2 text-[10px] font-bold uppercase tracking-widest transition-colors ${
+        className={`absolute -top-2 left-4 bg-surface px-2 text-label font-bold uppercase tracking-widest transition-colors ${
           error
             ? "text-error"
             : "text-on-surface-variant group-focus-within:text-on-surface-primary"
@@ -710,7 +710,7 @@ function FloatingInput({
       {error && (
         <p
           id={errorId}
-          className="text-[10px] font-bold uppercase tracking-widest text-error mt-2"
+          className="text-label font-bold uppercase tracking-widest text-error mt-2"
         >
           {error}
         </p>
