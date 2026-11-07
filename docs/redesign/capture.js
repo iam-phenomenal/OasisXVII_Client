@@ -4,7 +4,11 @@ const path = require('path');
 
 const OUT = process.argv[2];
 const BASE = 'http://localhost:3000';
-const WIDTHS = [390, 768, 1440];
+const WIDTHS = (process.env.WIDTHS || '320,390,768,1440').split(',').map(Number);
+// Checkout redirects to /cart when the bag is empty, so without a seeded cart
+// the checkout shots are really cart shots. CART_SEED is the JSON array that
+// CartContext stores under `oasisxvii-cart`.
+const CART_SEED = process.env.CART_SEED || null;
 const ROUTES = [
   ['home', '/'],
   ['shop', '/shop'],
@@ -16,7 +20,7 @@ const ROUTES = [
   ['shipping', '/shipping'],
   ['refund', '/refund'],
   ['not-found', '/this-route-does-not-exist'],
-];
+].filter(([name]) => !process.env.ROUTES || process.env.ROUTES.split(',').includes(name));
 
 (async () => {
   fs.mkdirSync(OUT, { recursive: true });
@@ -24,6 +28,9 @@ const ROUTES = [
   const results = [];
   for (const w of WIDTHS) {
     const ctx = await browser.newContext({ viewport: { width: w, height: 900 }, deviceScaleFactor: 1 });
+    if (CART_SEED) {
+      await ctx.addInitScript(seed => { localStorage.setItem('oasisxvii-cart', seed); }, CART_SEED);
+    }
     const page = await ctx.newPage();
     const errors = [];
     page.on('console', m => { if (m.type() === 'error') errors.push(m.text()); });
@@ -74,9 +81,13 @@ const ROUTES = [
           const hidden = await page.evaluate(() =>
             [...document.querySelectorAll('.animate-reveal')].filter(
               el => getComputedStyle(el).opacity !== '1').length);
+          // Any horizontal overflow means the page scrolls sideways on a phone.
+          const overflow = await page.evaluate(() =>
+            document.documentElement.scrollWidth - window.innerWidth);
           await page.screenshot({ path: path.join(OUT, `${name}-${w}.png`), fullPage: true });
           if (hidden) status = status + ` [${hidden} still hidden]`;
           if (broken) status = status + ` [${broken} BROKEN IMAGES]`;
+          if (overflow > 0) status = status + ` [overflow ${overflow}px]`;
           if (attempt > 1) status = status + ` (retry x${attempt})`;
           break;
         } catch (e) {
