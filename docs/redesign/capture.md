@@ -11,7 +11,19 @@ node docs/redesign/capture.js docs/redesign/baseline      # phase 0 baseline
 node docs/redesign/capture.js docs/redesign/shots/phase-3 # any later phase
 ```
 
-10 routes x 390 / 768 / 1440.
+10 routes x 320 / 390 / 768 / 1440.
+
+Options (environment variables):
+
+- `WIDTHS=320,1024` overrides the viewport widths.
+- `ROUTES=checkout,cart` limits the run to those route names.
+- `CART_SEED='[{"productId":"…","size":"M","color":"GREEN","quantity":1}]'`
+  writes that cart into localStorage before every page load. **Checkout needs
+  this:** with an empty bag it redirects to `/cart`, so unseeded `checkout-*`
+  shots (including the phase-0 baseline) are really shots of the cart page.
+
+Every row is flagged `[overflow Npx]` when the page is wider than the viewport,
+which means it scrolls sideways on that device.
 
 ## Why it scrolls before it shoots
 
