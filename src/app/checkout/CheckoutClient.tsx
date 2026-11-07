@@ -262,7 +262,7 @@ export function CheckoutClient({
       <Navbar variant="checkout" />
       <main className="pt-32 pb-24 px-6 lg:px-12 max-w-[1400px] mx-auto min-h-screen">
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-16 xl:gap-24">
-          <section className="lg:col-span-7 space-y-20">
+          <section className="lg:col-span-7 space-y-20 min-w-0">
             <div>
               <h1 className="font-serif font-black text-4xl tracking-tighter uppercase mb-10 italic">
                 Contact <span className="text-on-surface-primary">_</span>
@@ -395,8 +395,8 @@ export function CheckoutClient({
 
           </section>
 
-          <aside className="lg:col-span-5 sticky top-32 h-fit">
-            <div className="bg-surface-container border border-outline p-10 shadow-wine-glow">
+          <aside className="lg:col-span-5 sticky top-32 h-fit min-w-0">
+            <div className="bg-surface-container border border-outline p-6 sm:p-10 shadow-wine-glow">
               <h2 className="font-headline font-black text-2xl tracking-tighter uppercase mb-10 italic">
                 My Cart
               </h2>
@@ -432,13 +432,13 @@ export function CheckoutClient({
                       <article
                         key={`${item.productId}-${item.size}-${item.color}`}
                         className={[
-                          "flex gap-6 items-start",
+                          "flex gap-4 sm:gap-6 items-start",
                           itemSoldOut ? "opacity-40" : "",
                         ]
                           .filter(Boolean)
                           .join(" ")}
                       >
-                        <div className="relative w-28 aspect-[3/4] bg-surface-container-high overflow-hidden border border-outline">
+                        <div className="relative w-20 sm:w-28 shrink-0 aspect-[3/4] bg-surface-container-high overflow-hidden border border-outline">
                           {getSafeImageUrl(product.images) ? (
                             <Image
                               src={getSafeImageUrl(product.images)!}
@@ -453,8 +453,8 @@ export function CheckoutClient({
                           </span>
                         </div>
 
-                        <div>
-                          <h3 className="font-headline font-black uppercase tracking-tight text-base italic">
+                        <div className="min-w-0 flex-1">
+                          <h3 className="font-headline font-black uppercase tracking-tight text-base italic break-words">
                             {product.name}
                           </h3>
                           <p className="text-label text-on-surface-variant font-bold uppercase tracking-widest">
@@ -541,14 +541,16 @@ export function CheckoutClient({
                 {orderError}
               </p>
 
-              <div className="mt-6 border border-outline px-6 py-5 flex items-center gap-3">
-                <span className="text-label-sm font-bold uppercase tracking-widest text-on-surface-variant">
-                  Secured by
-                </span>
-                <span className="text-label-lg font-black uppercase tracking-wider text-on-surface">
-                  Paystack
-                </span>
-                <div className="ml-2 flex items-center gap-2">
+              <div className="mt-6 border border-outline px-4 py-4 sm:px-6 sm:py-5 flex flex-col gap-3 sm:flex-row sm:items-center lg:flex-col lg:items-start xl:flex-row xl:items-center">
+                <div className="flex items-center gap-3">
+                  <span className="text-label-sm font-bold uppercase tracking-widest text-on-surface-variant">
+                    Secured by
+                  </span>
+                  <span className="text-label-lg font-black uppercase tracking-wider text-on-surface">
+                    Paystack
+                  </span>
+                </div>
+                <div className="sm:ml-2 lg:ml-0 xl:ml-2 sm:shrink-0 flex flex-wrap items-center gap-2">
                   {["Mastercard", "Visa", "Verve"].map((card) => (
                     <span
                       key={card}
